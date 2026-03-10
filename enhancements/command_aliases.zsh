@@ -2,6 +2,7 @@
 typeset -A llvm_aliases=(
   [lladdr2line]="llvm-addr2line"
   [llar]="llvm-ar"
+  [llbolt]="llvm-bolt"
   [llc]="llc"
   [llbc]="llvm-bcanalyzer"
   [llas]="llvm-as"
@@ -34,10 +35,36 @@ typeset -A clang_aliases=(
   [clquery]="clang-query"
   [clapply]="clang-apply-replacements"
 )
+typeset -A mlir_aliases=(
+  [mllgoyg]="mlir-linalg-ods-yaml-gen"
+  [mlopt]="mlir-opt"
+  [mlpdll]="mlir-pdll"
+  [mlirlsp]="mlir-lsp-server"
+  [mlquery]="mlir-query"
+  [mlreduce]="mlir-reduce"
+  [mlrewrite]="mlir-rewrite"
+  [mlrunner]="mlir-runner"
+  [mltblgen]="mlir-tblgen"
+  [mltranslate]="mlir-translate"
+)
+typeset -A spirv_aliases=(
+  [spvas]="spirv-as"
+  [spvcfg]="spirv-cfg"
+  [spvdiff]="spirv-diff"
+  [spvdis]="spirv-dis"
+  [spvlesspipe]="spirv-lesspipe"
+  [spvlink]="spirv-link"
+  [spvlint]="spirv-lint"
+  [spvobjdump]="spirv-objdump"
+  [spvopt]="spirv-opt"
+  [spvval]="spirv-val"
+)
 typeset -A coreutils_aliases=(
-  [ls]="ls -A --color=auto"
+  [ls]="ls --color=auto"
+  [la]="ls -A --color=auto"
   [ll]="ls -lAh --color=auto"
-  [lst]="ls -1A --color=auto"
+  [lst]="ls -1 --color=auto"
+  [lat]="ls -1A --color=auto"
 )
 typeset -A custom_shell_aliases=(
 )
@@ -100,13 +127,10 @@ function add_custom_shell_aliases {
 function load_shell_aliases {
   add_shell_aliases llvm_aliases "LLVM Toolchain Aliases:"
   add_shell_aliases clang_aliases "Clang Tool Aliases:"
+  add_shell_aliases mlir_aliases "MLIR Tool Aliases:"
+  add_shell_aliases spirv_aliases "SPIR-V Tool Aliases:"
   add_shell_aliases coreutils_aliases "Core Utility Aliases:"
   add_custom_shell_aliases custom_shell_aliases "Custom Shell Aliases:"
 }
 
 load_shell_aliases
-
-# Functions to create symlinks for environment persistence
-
-
-
