@@ -3,7 +3,6 @@ typeset -A llvm_aliases=(
   [lladdr2line]="llvm-addr2line"
   [llar]="llvm-ar"
   [llbolt]="llvm-bolt"
-  [llc]="llc"
   [llbc]="llvm-bcanalyzer"
   [llas]="llvm-as"
   [lldis]="llvm-dis"
@@ -36,7 +35,6 @@ typeset -A clang_aliases=(
   [clapply]="clang-apply-replacements"
 )
 typeset -A mlir_aliases=(
-  [mllgoyg]="mlir-linalg-ods-yaml-gen"
   [mlopt]="mlir-opt"
   [mlpdll]="mlir-pdll"
   [mlirlsp]="mlir-lsp-server"
@@ -59,78 +57,62 @@ typeset -A spirv_aliases=(
   [spvopt]="spirv-opt"
   [spvval]="spirv-val"
 )
-typeset -A coreutils_aliases=(
+typeset -A coreutil_aliases=(
   [ls]="ls --color=auto"
   [la]="ls -A --color=auto"
   [ll]="ls -lAh --color=auto"
   [lst]="ls -1 --color=auto"
-  [lat]="ls -1A --color=auto"
+  [lsta]="ls -1A --color=auto"
 )
-typeset -A custom_shell_aliases=(
+typeset -A builtin_aliases=(
+  [cdwh]="cd $WHOME"
+  [cduh]="cd $UHOME"
+)
+typeset -A custom_aliases=(
 )
 
 # Functions to add aliases
-function add_shell_aliases {
+function add_utility_aliases {
   local -A r_arr=(${(@Pkv)1})
   local statement="$2"
-  #echo "$statement"
   for tool in ${(@k)r_arr}; do
     local toolcmd="${r_arr[$tool]}"
-    if (( ! $+commands[${toolcmd%%[[:space:]]*}] )); then
-      #printf "${ink[gray]}: %s %s\n" "${ink[gold]}$toolcmd${ink[reset]}" "${ink[beige]}(command not found)${ink[reset]}"
-      continue
-    fi
+    (( $+commands[$toolcmd] )) || continue
     local toolalias="$tool"
-    if [[ "$toolalias" == "$toolcmd" ]]; then
-      #printf "${ink[gray]}: %s %s\n" "${ink[gold]}$toolcmd${ink[reset]}" "${ink[brighterskyblue]}(no alias needed)${ink[reset]}"
-      continue
-    fi
-    if alias "$toolalias" &>/dev/null; then
-      #printf "${ink[gray]}: %s %s\n" "${ink[cerulean]}$toolalias${ink[reset]}" "${ink[brighterskyblue]}(already exists)${ink[reset]}"
-      continue
-    fi
+    [[ "$toolalias" != "$toolcmd" ]] || continue
+    [[ -z "$(alias "$toolalias")" ]] || continue
     alias "$toolalias"="$toolcmd"
     if ! alias "$toolalias" &>/dev/null; then
-      #printf "${ink[gray]}: %s %s\n" "${ink[coral]}$toolalias${ink[reset]}" "${ink[beige]}(alias failed)${ink[reset]}"
       continue
     fi
-    #printf "${ink[gray]}: %s = '%s'\n" "${ink[forestgreen]}$toolalias${ink[reset]}" "${ink[gold]}$toolcmd${ink[reset]}"
   done
-  #echo ""
 }
-function add_custom_shell_aliases {
+
+function add_qualifier_aliases {
   local -A r_arr=(${(@Pkv)1})
   local statement="$2"
-  #echo "$statement"
   for tool in ${(@k)r_arr}; do
-    local toolalias="$tool"
     local toolcmd="${r_arr[$tool]}"
-    if [[ "$toolalias" == "$toolcmd" ]]; then
-      #printf "${ink[gray]}: %s %s\n" "${ink[gold]}$toolcmd${ink[reset]}" "${ink[brighterskyblue]}(no alias needed)${ink[reset]}"
-      continue
-    fi
+    local toolalias="$tool"
+    [[ "$toolalias" != "$toolcmd" ]] || continue
     if alias "$toolalias" &>/dev/null; then
-      #printf "${ink[gray]}: %s %s\n" "${ink[cerulean]}$toolalias${ink[reset]}" "${ink[brighterskyblue]}(already exists)${ink[reset]}"
       continue
     fi
     alias "$toolalias"="$toolcmd"
     if ! alias "$toolalias" &>/dev/null; then
-      #printf "${ink[gray]}: %s %s\n" "${ink[coral]}$toolalias${ink[reset]}" "${ink[beige]}(alias failed)${ink[reset]}"
       continue
     fi
-    #printf "${ink[gray]}: %s = '%s'\n" "${ink[forestgreen]}$toolalias${ink[reset]}" "${ink[gold]}$toolcmd${ink[reset]}"
   done
-  #echo ""
 }
 
 # Function to load aliases
 function load_shell_aliases {
-  add_shell_aliases llvm_aliases "LLVM Toolchain Aliases:"
-  add_shell_aliases clang_aliases "Clang Tool Aliases:"
-  add_shell_aliases mlir_aliases "MLIR Tool Aliases:"
-  add_shell_aliases spirv_aliases "SPIR-V Tool Aliases:"
-  add_shell_aliases coreutils_aliases "Core Utility Aliases:"
-  add_custom_shell_aliases custom_shell_aliases "Custom Shell Aliases:"
+  add_utility_aliases llvm_aliases "LLVM Toolchain Aliases:"
+  add_utility_aliases clang_aliases "Clang Tool Aliases:"
+  add_utility_aliases mlir_aliases "MLIR Tool Aliases:"
+  add_utility_aliases spirv_aliases "SPIR-V Tool Aliases:"
+  add_qualifier_aliases coreutil_aliases "Core Utility Aliases:"
+  add_qualifier_aliases builtin_aliases "Builtin Shell Aliases:"
+  add_qualifier_aliases custom_aliases "Custom Shell Aliases:"
 }
-
 load_shell_aliases

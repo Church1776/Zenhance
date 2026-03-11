@@ -55,3 +55,15 @@ typeset -gA ink=(
   brighterskyblue $'\e[38;5;159m'
   reset           $'\e[0m'
 )
+
+function shcolors {
+  if [[ -z $ink ]]; then
+    echo ":[info]: No colors found."
+    return
+  fi
+  echo "Colors loaded:"
+  for color in ${(ok)ink}; do
+    echo -e "${ink[gray]}: ${ink[$color]}$color${ink[reset]}"
+  done
+  echo ""
+}
