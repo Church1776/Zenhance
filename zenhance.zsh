@@ -3,12 +3,12 @@
 
 # Z Shell easy color modifiers for changing the terminal user prompt.
 usys=$(uname ${MSYSTEM:+'-o'}) # Check for MSYS2 environment to use 'Msys' for certain display functions.
-name=${name:-'orange'}
-AT=${AT:-'amber'}
-machine=${machine:-'lightorange'}
-system_env=${system_env:-'slateblue'}
-unix_path=${unix_path:-'turquoise'}
-unix_Z=${unix_Z:-'mint'}
+name=${name:-'turquoise'}
+AT=${AT:-'brightgreen'}
+machine=${machine:-'mint'}
+system_env=${system_env:-'periwinkle'}
+unix_path=${unix_path:-'gold'}
+unix_Z=${unix_Z:-'brightergold'}
 win32_path=${win32_path:-'cerulean'}
 win32_Z=${win32_Z:-'brighterskyblue'}
 vcs_branch=${vcs_branch:-'gray'}
@@ -33,11 +33,20 @@ if [[ -n $configs ]]; then
     [[ -f $config ]] && source $config
   done
 fi
-MNT='/mnt'
 
-# Grab the msys2 root path for later use.
+# Configure Windows home directory. I'm Assuming the Windows environment is available to the User.
+[[ $usys == 'Msys' ]] && WHOME=$(cygpath -u $USERPROFILE)
+WHOME=${WHOME:-"$(find /mnt -maxdepth 3 -type d -name "$USER" 2>/dev/null)"}
+# Display Shell User paths.
+function shuser {
+  echo "Home directories found for ${ink[$name]}$USER${ink[reset]}: ${ink[$unix_path]}$usys${ink[reset]}${WHOME:+|}${ink[$win32_path]}${WHOME:+Windows}${ink[reset]}."
+  echo -e "${ink[$system_env]}:[$usys]: ${ink[$unix_path]}${HOME%$USER}${ink[$name]}$USER${ink[reset]}"
+  [[ -n $WHOME ]] || return
+  echo -e "${ink[$system_env]}:[Windows]: ${ink[$win32_path]}${WHOME%$USER}${ink[$name]}$USER${ink[reset]}"
+}
+
+# Grab the msys2 root path for the precmd function.
 if [[ -n $MSYSTEM ]]; then
-  unset MNT
   cd / &>/dev/null
   MROOT="$(cygpath -m "$PWD")"
   MROOT="/${(L)MROOT//:/}"
@@ -45,28 +54,25 @@ if [[ -n $MSYSTEM ]]; then
   cd - &>/dev/null
 fi
 
-# Configure Windows home directory.
-WHOME="$(find $MNT/c -maxdepth 2 -type d -name "$USER" 2>/dev/null)"
-# Display Home paths.
-function shuser {
-  echo "Home directories for ${ink[$name]}$USER${ink[reset]} on ${ink[$unix_path]}$usys${ink[reset]}|${ink[$win32_path]}Windows${ink[reset]}."
-  echo -e "${ink[$system_env]}:[$usys]: ${ink[$unix_path]}${HOME%$USER}${ink[$name]}$USER${ink[reset]}"
-  echo -e "${ink[$system_env]}:[Windows]: ${ink[$win32_path]}${WHOME%$USER}${ink[$name]}$USER${ink[reset]}"
-}
+# Check for Linux system and grab the distro name for the precmd function.
+if [[ $usys == 'Linux' ]]; then
+  source /etc/os-release
+  NAME="$NAME"
+fi
 
 # Pre-Command Function for the prompt.
 function precmd {
-  if [[ -n $MSYSTEM ]]; then
+  if [[ $usys == 'Msys' ]]; then
     case $MSYSTEM in
       CLANG64)USYSTEM='Clang64';;
       CLANGARM64)USYSTEM='ClangArm64';;
       MINGW64)USYSTEM='MinGW64';;
       MINGW32)USYSTEM='MinGW32';;
       UCRT64)USYSTEM='UCRT64';;
-      MSYS)USYSTEM='MSYS';;
+      MSYS)USYSTEM='Msys';;
     esac
   else
-    USYSTEM="$NAME"
+    USYSTEM="${NAME:-$usys}"
   fi
   if git_branch_info="$(git branch --show-current 2>/dev/null)" && [[ -z $git_branch_info ]]; then
     git_branch_info="HEAD@$(git rev-parse --short HEAD 2>/dev/null)"
