@@ -72,7 +72,6 @@ typeset -A custom_aliases=(
 # Functions to add aliases
 function add_utility_aliases {
   local -A r_arr=(${(@Pkv)1})
-  local statement="$2"
   for tool in ${(@k)r_arr}; do
     local toolcmd="${r_arr[$tool]}"
     (( $+commands[$toolcmd] )) || continue
@@ -87,7 +86,6 @@ function add_utility_aliases {
 
 function add_qualifier_aliases {
   local -A r_arr=(${(@Pkv)1})
-  local statement="$2"
   for tool in ${(@k)r_arr}; do
     local toolcmd="${r_arr[$tool]}"
     local toolalias="$tool"
@@ -101,20 +99,20 @@ function add_qualifier_aliases {
 
 # Function to load aliases
 function load_shell_aliases {
-  add_utility_aliases llvm_aliases "LLVM Toolchain Aliases:"
-  add_utility_aliases clang_aliases "Clang Tool Aliases:"
-  add_utility_aliases mlir_aliases "MLIR Tool Aliases:"
-  add_utility_aliases spirv_aliases "SPIR-V Tool Aliases:"
-  add_qualifier_aliases coreutil_aliases "Core Utility Aliases:"
-  add_qualifier_aliases builtin_aliases "Builtin Shell Aliases:"
-  add_qualifier_aliases custom_aliases "Custom Shell Aliases:"
+  add_utility_aliases llvm_aliases
+  add_utility_aliases clang_aliases
+  add_utility_aliases mlir_aliases
+  add_utility_aliases spirv_aliases
+  add_qualifier_aliases coreutil_aliases
+  add_qualifier_aliases builtin_aliases
+  add_qualifier_aliases custom_aliases
 }
 load_shell_aliases
 
 # Cleanup all values to keep the shell environment clean
-unalias -f add_utility_aliases
-unalias -f add_qualifier_aliases
-unalias -f load_shell_aliases
+unset -f add_utility_aliases
+unset -f add_qualifier_aliases
+unset -f load_shell_aliases
 
 unset llvm_aliases
 unset clang_aliases
