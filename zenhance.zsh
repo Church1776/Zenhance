@@ -23,9 +23,11 @@ echo -ne '\e[3 q'  # Blinking underline
 #echo -ne '\e[5 q'  # Blinking bar (I-beam)
 #echo -ne '\e[6 q'         # Steady bar (recommended for modern terminals)
 
-# Define the selection widgets
-# Initialize shell configurations.
+# Configure Windows home directory. I'm Assuming the Windows environment is available to the User.
+[[ $usys == 'Msys' ]] && WHOME=$(cygpath -u $USERPROFILE)
+WHOME=${WHOME:-"$(find /mnt -maxdepth 3 -type d -name "$USER" 2>/dev/null)"}
 
+# Initialize shell configurations.
 configs=($(find ${0:A:h}/enhancements -maxdepth 1 -type f -name '*.zsh' ))
 configs+=($(find ${0:A:h}/enhancements/${(L)usys} -type f -name '*.zsh'))
 if [[ -n $configs ]]; then
@@ -34,9 +36,6 @@ if [[ -n $configs ]]; then
   done
 fi
 
-# Configure Windows home directory. I'm Assuming the Windows environment is available to the User.
-[[ $usys == 'Msys' ]] && WHOME=$(cygpath -u $USERPROFILE)
-WHOME=${WHOME:-"$(find /mnt -maxdepth 3 -type d -name "$USER" 2>/dev/null)"}
 # Display Shell User paths.
 function shuser {
   echo "Home directories found for ${ink[$name]}$USER${ink[reset]}: ${ink[$unix_path]}$usys${ink[reset]}${WHOME:+|}${ink[$win32_path]}${WHOME:+Windows}${ink[reset]}."

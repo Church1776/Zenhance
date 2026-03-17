@@ -59,14 +59,12 @@ typeset -A spirv_aliases=(
 )
 typeset -A coreutil_aliases=(
   [ls]="ls --color=auto"
-  [la]="ls -A --color=auto"
+  [la]="ls -a --color=auto"
   [ll]="ls -lAh --color=auto"
   [lst]="ls -1 --color=auto"
   [lsta]="ls -1A --color=auto"
 )
 typeset -A builtin_aliases=(
-  [cdwh]="cd $WHOME"
-  [cduh]="cd $UHOME"
 )
 typeset -A custom_aliases=(
 )
@@ -81,9 +79,8 @@ function add_utility_aliases {
     local toolalias="$tool"
     [[ "$toolalias" != "$toolcmd" ]] || continue
     [[ -z "$(alias "$toolalias")" ]] || continue
-    alias "$toolalias"="$toolcmd"
-    if ! alias "$toolalias" &>/dev/null; then
-      continue
+    if ! alias "$toolalias"="$toolcmd" 2>/dev/null; then
+      echo "Failed to create alias: $toolalias -> $toolcmd."
     fi
   done
 }
@@ -95,12 +92,9 @@ function add_qualifier_aliases {
     local toolcmd="${r_arr[$tool]}"
     local toolalias="$tool"
     [[ "$toolalias" != "$toolcmd" ]] || continue
-    if alias "$toolalias" &>/dev/null; then
-      continue
-    fi
-    alias "$toolalias"="$toolcmd"
-    if ! alias "$toolalias" &>/dev/null; then
-      continue
+    [[ -z "$(alias "$toolalias")" ]] || continue
+    if ! alias "$toolalias"="$toolcmd" &>/dev/null; then
+      echo "Failed to create alias: $toolalias -> $toolcmd."
     fi
   done
 }
