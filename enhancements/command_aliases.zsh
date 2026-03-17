@@ -110,3 +110,16 @@ function load_shell_aliases {
   add_qualifier_aliases custom_aliases "Custom Shell Aliases:"
 }
 load_shell_aliases
+
+# Cleanup all values to keep the shell environment clean
+unalias -f add_utility_aliases
+unalias -f add_qualifier_aliases
+unalias -f load_shell_aliases
+
+unset llvm_aliases
+unset clang_aliases
+unset mlir_aliases
+unset spirv_aliases
+unset coreutil_aliases
+unset builtin_aliases
+unset custom_aliases
