@@ -1,5 +1,4 @@
 #!/bin/zsh
-0="${(%):-%N}" &>/dev/null
 
 # Z Shell easy color modifiers for changing the terminal user prompt.
 usys=$(uname ${MSYSTEM:+'-o'}) # Check for MSYS2 environment to use 'Msys' for certain display functions.
@@ -27,9 +26,10 @@ echo -ne '\e[3 q'  # Blinking underline
 [[ $usys == 'Msys' ]] && WHOME=$(cygpath -u $USERPROFILE)
 WHOME=${WHOME:-"$(find /mnt -maxdepth 3 -type d -name "$USER" 2>/dev/null)"}
 
-# Initialize shell configurations.
-configs=($(find ${0:A:h}/enhancements -maxdepth 1 -type f -name '*.zsh' ))
-configs+=($(find ${0:A:h}/enhancements/${(L)usys} -type f -name '*.zsh'))
+# Initialize shell configurations relative to script's location.
+zenhance="${(%):-%N}" &>/dev/null
+configs=($(find ${zenhance:A:h}/enhancements -maxdepth 1 -type f -name '*.zsh' ))
+configs+=($(find ${zenhance:A:h}/enhancements/${(L)usys} -type f -name '*.zsh'))
 if [[ -n $configs ]]; then
   for config in ${(@o)configs[@]}; do
     [[ -f $config ]] && source $config
