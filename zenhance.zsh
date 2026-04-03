@@ -28,10 +28,10 @@ WHOME=${WHOME:-"$(find /mnt -maxdepth 3 -type d -name "$USER" 2>/dev/null)"}
 
 # Initialize shell configurations relative to script's location.
 zenhance="${(%):-%N}" &>/dev/null
-configs=($(find ${zenhance:A:h}/enhancements -maxdepth 1 -type f -name '*.zsh' ))
-configs+=($(find ${zenhance:A:h}/enhancements/${(L)usys} -type f -name '*.zsh'))
+configs=($(find ${zenhance:A:h}/enhancements/${(L)usys} -type f -name '*.zsh'))
+configs+=($(find ${zenhance:A:h}/enhancements -maxdepth 1 -type f -name '*.zsh' ))
 if [[ -n $configs ]]; then
-  for config in ${(@o)configs[@]}; do
+  for config in ${(@)configs[@]}; do
     [[ -f $config ]] && source $config
   done
 fi

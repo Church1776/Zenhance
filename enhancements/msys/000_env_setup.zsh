@@ -33,3 +33,15 @@ function vscodepath {
 }
 vscodepath
 unset -f vscodepath
+
+function javapath {
+  local program="$(cygpath -u $PROGRAMFILES)"
+  local java_bin_path="$program/Common Files/Oracle/Java/javapath"
+  if [[ $PATH == *"$java_bin_path"* ]]; then
+      return
+  fi
+  PATH+=":$java_bin_path"
+  export PATH="$PATH"
+}
+javapath
+unset -f javapath
