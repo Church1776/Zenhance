@@ -23,7 +23,7 @@ echo -ne '\e[3 q'  # Blinking underline
 #echo -ne '\e[6 q'         # Steady bar (recommended for modern terminals)
 
 # Configure Windows home directory. I'm Assuming the Windows environment is available to the User.
-[[ $usys == 'Msys' ]] && WHOME=$(cygpath -u $USERPROFILE)
+[[ $usys == 'Msys' ]] && WHOME=$(cygpath -u ${WINDIR%%\\*})/Users/$USER
 WHOME=${WHOME:-"$(find /mnt -maxdepth 3 -type d -name "$USER" 2>/dev/null)"}
 
 # Initialize shell configurations relative to script's location.
@@ -46,11 +46,9 @@ function shuser {
 
 # Grab the msys2 root path for the precmd function.
 if [[ -n $MSYSTEM ]]; then
-  cd / &>/dev/null
-  MROOT="$(cygpath -m "$PWD")"
+  MROOT="$(cygpath -m /)"
   MROOT="/${(L)MROOT//:/}"
   MROOT="${MROOT%/}"
-  cd - &>/dev/null
 fi
 
 # Check for Linux system and grab the distro name for the precmd function.
