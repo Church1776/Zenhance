@@ -67,6 +67,7 @@ typeset -A coreutil_aliases=(
 typeset -A builtin_aliases=(
 )
 typeset -A custom_aliases=(
+  [msys]="msys.cmd"
   [premake]="premake5"
 )
 

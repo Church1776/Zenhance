@@ -57,6 +57,15 @@ if [[ $usys == 'Linux' ]]; then
   NAME="$NAME"
 fi
 
+# Check if in a git repository and grab the root directory for the precmd function.
+git_repo_root=""
+git_branch_info=""
+git_hash_length=0
+if git rev-parse --show-toplevel &>/dev/null; then
+  git_repo_root="$(git rev-parse --show-toplevel 2>/dev/null)"
+
+fi
+
 # Pre-Command Function for the prompt.
 function precmd {
   if [[ $usys == 'Msys' ]]; then
@@ -71,12 +80,40 @@ function precmd {
   else
     USYSTEM="${NAME:-$usys}"
   fi
-  if git_branch_info="$(git branch --show-current 2>/dev/null)" && [[ -z $git_branch_info ]]; then
-    git_branch_info="HEAD@$(git rev-parse --short HEAD 2>/dev/null)"
+  if [[ -z $git_repo_root || $PWD != $git_repo_root* ]]; then
+    git_repo_root=""
+    if [[ -n $git_branch_info ]]; then
+      git_branch_info=""
+    fi
+    if [[ $git_hash_length -ne 0 ]]; then
+      git_hash_length=0
+    fi
+    local tempPWD=$PWD
+    while [[ -n $tempPWD && $tempPWD != "/" ]]; do
+      if [[ -d "$tempPWD/.git" ]]; then
+        git_repo_root="$tempPWD"
+        break
+      fi
+      tempPWD="${tempPWD:h}"
+    done
   fi
-  if [[ -n $git_branch_info ]]; then
-    git_branch_info="%{${ink[$vcs_branch]}%}($git_branch_info)%{${ink[reset]}%} "
+  if [[ -n $git_repo_root ]]; then
+    read -r git_branch_info < "$git_repo_root/.git/HEAD"
+    if [[ $git_branch_info == ref:\ refs/heads/* ]]; then
+      git_branch_info="${git_branch_info#ref: refs/heads/}"
+    else
+      if [[ -z $git_hash_length ]]; then
+        local git_short_hash_id="$(git rev-parse --short HEAD 2>/dev/null)"
+        git_hash_length=${#git_short_hash_id}
+      fi
+        read -k $git_hash_length -r git_branch_info "$git_repo_root/.git/HEAD"
+        git_branch_info="HEAD@${git_branch_info:0:$git_hash_length}"
+    fi
+    if [[ -n $git_branch_info ]]; then
+      git_branch_info="%{${ink[$vcs_branch]}%}($git_branch_info)%{${ink[reset]}%} "
+    fi
   fi
+
   if [[ $PWD == "/"[a-z] && -n $MSYSTEM && $PWD != ${MROOT}* || $PWD == "/"[a-z]/* && -n $MSYSTEM && $PWD != ${MROOT}* || $PWD == "/mnt/"[a-z] && -n $WSL_DISTRO_NAME || $PWD == "/mnt/"[a-z]/* && -n $WSL_DISTRO_NAME ]]; then
     PROMPT="%{${ink[$name]}%}%n%{${ink[$AT]}%}@%{${ink[$machine]}%}%m%{${ink[$colon]}%}:%{${ink[$system_env]}%}$USYSTEM%{${ink[$colon]}%}:%{${ink[$win32_path]}%}${PWD/$WHOME/~}%{${ink[$win32_Z]}%}%#${ink[reset]} ${git_branch_info}"
   else

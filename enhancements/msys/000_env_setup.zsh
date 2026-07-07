@@ -23,8 +23,8 @@ localtools
 unset -f localtools
 
 function vscodepath {
-  local user="$(cygpath -u $USERPROFILE)"
-  local vscode_bin_path="$user/AppData/Local/Programs/Microsoft VS Code/bin"
+  local userprograms="$(cygpath -u ${LOCALAPPDATA})/Programs"
+  local vscode_bin_path="$userprograms/Microsoft VS Code/bin"
   if [[ $PATH == *"$vscode_bin_path"* ]]; then
       return
   fi
@@ -46,6 +46,18 @@ function javapath {
 javapath
 unset -f javapath
 
+function vcpkgpath {
+  local userprograms="$(cygpath -u ${LOCALAPPDATA})/Programs"
+  local vcpkg_bin_path="$userprograms/vcpkg"
+  if [[ $PATH == *"$vcpkg_bin_path"* ]]; then
+      return
+  fi
+  PATH+=":$vcpkg_bin_path"
+  export PATH="$PATH"
+}
+vcpkgpath
+unset -f vcpkgpath
+
 CC="clang"
 CCSTD="c23"
 
@@ -54,53 +66,63 @@ CXXSTD="c++23"
 CXXSTDLIB="libc++"
 CXXRTLIB="compiler-rt"
 CXXUSELD="lld"
+CXXINCLUDE=""
 
-function incfinder {
-REPO_ROOT="$(git rev-parse --show-toplevel 2> /dev/null)"
+function find-include-folder {
 
-TEMPPWD="$PWD"
+  local REPO_ROOT="$(git rev-parse --show-toplevel 2> /dev/null)"
 
-while [[ "$TEMPPWD" == "$REPO_ROOT/*" || "$TEMPPWD" == "$REPO_ROOT" ]]; do
-  printf "Checking \033[33m$TEMPPWD\033[0m for inc directory...\n"
-  CXXINCLUDE="$(find "$TEMPPWD" -maxdepth 1 -type d -name "inc"* -print -quit)"
-  if [[ -d "$CXXINCLUDE" ]]; then
-    printf "Found inc directory at \033[32m$CXXINCLUDE\033[0m\n"
+  if [[ -z $REPO_ROOT ]]; then
+    echo "Not in a git repository. Cannot find include folder."
+    return
   fi
-  TEMPPWD="${TEMPPWD:h}"
-done
 
-unset REPO_ROOT
-unset TEMPPWD
+  echo "Repository root found at: \033[36m${REPO_ROOT//$HOME/~}\033[0m"
+
+  local TEMPPWD="$PWD"
+
+  while [[ "$TEMPPWD" == "$REPO_ROOT"/* || "$TEMPPWD" == "$REPO_ROOT" ]]; do
+    printf "Checking \033[33m${TEMPPWD//${REPO_ROOT:h}/...}\033[0m for inc directory...\n"
+    CXXINCLUDE="$(find "$TEMPPWD" -maxdepth 1 -type d -name "inc"* -print -quit)"
+    if [[ -d "$CXXINCLUDE" ]]; then
+      printf "Found inc directory at \033[32m${CXXINCLUDE//${REPO_ROOT:h}/...}\033[0m\n"
+      break
+    fi
+    TEMPPWD="${TEMPPWD:h}"
+  done
+
+  unset REPO_ROOT
+  unset TEMPPWD
 }
-incfinder
+find-include-folder
 
 export CC CCSTD CXX CXXSTD CXXSTDLIB CXXRTLIB CXXUSELD CXXINCLUDE
+CXXFLAGS=()
+LDLIBS=(-luser32 -lgdi32)
 
-WINLIBS=(-luser32 -lgdi32)
+export CXXFLAGS
+export LDLIBS
 
-export WINLIBS
-
-function ccmpl {
-  $CC -std=$CCSTD -I$CXXINCLUDE "$@" ${WINLIBS[@]}
+function ccpl {
+  $CC -std=$CCSTD -I$CXXINCLUDE "$@" ${LDLIBS[@]}
 }
 
-function cxxcmpl {
-  $CXX -std=$CXXSTD -stdlib=$CXXSTDLIB -rtlib=$CXXRTLIB -fuse-ld=$CXXUSELD -I$CXXINCLUDE "$@" ${WINLIBS[@]}
+function cxxpl {
+  $CXX -std=$CXXSTD -stdlib=$CXXSTDLIB -rtlib=$CXXRTLIB -fuse-ld=$CXXUSELD -I$CXXINCLUDE ${CXXFLAGS[@]} "$@" ${LDLIBS[@]}
 }
 
-function set_cmpl {
+function set_cpl {
   
   case "$1" in
-    c|C) alias cmpl=ccmpl;;
-    c++|C++|cxx|CXX|cpp|CPP) alias cmpl=cxxcmpl;;
-    *) echo "Unknown Argument: $1"
-      echo "Available options: c, C, c++, C++, cxx, CXX, cpp, CPP"
+    c|C) alias cpl=ccpl;;
+    c++|C++|cxx|CXX|cpp|CPP) alias cpl=cxxpl;;
+    *) echo "set_cpl: Unknown Argument: '$1'"
+      echo "set_cpl: Available options: c, C, c++, C++, cxx, CXX, cpp, CPP"
       ;;
   esac
 
-  if [[ -z $(alias cmpl 2>/dev/null) ]]; then
-    alias cmpl=cxxcmpl
+  if [[ -z $(alias cpl 2>/dev/null) ]]; then
+    alias cpl=cxxpl
   fi
 }
-set_cmpl
-
+set_cpl C++
