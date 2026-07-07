@@ -73,19 +73,14 @@ function find-include-folder {
   local REPO_ROOT="$(git rev-parse --show-toplevel 2> /dev/null)"
 
   if [[ -z $REPO_ROOT ]]; then
-    echo "Not in a git repository. Cannot find include folder."
     return
   fi
-
-  echo "Repository root found at: \033[36m${REPO_ROOT//$HOME/~}\033[0m"
 
   local TEMPPWD="$PWD"
 
   while [[ "$TEMPPWD" == "$REPO_ROOT"/* || "$TEMPPWD" == "$REPO_ROOT" ]]; do
-    printf "Checking \033[33m${TEMPPWD//${REPO_ROOT:h}/...}\033[0m for inc directory...\n"
     CXXINCLUDE="$(find "$TEMPPWD" -maxdepth 1 -type d -name "inc"* -print -quit)"
     if [[ -d "$CXXINCLUDE" ]]; then
-      printf "Found inc directory at \033[32m${CXXINCLUDE//${REPO_ROOT:h}/...}\033[0m\n"
       break
     fi
     TEMPPWD="${TEMPPWD:h}"
