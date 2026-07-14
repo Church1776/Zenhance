@@ -93,31 +93,60 @@ find-include-folder
 
 export CC CCSTD CXX CXXSTD CXXSTDLIB CXXRTLIB CXXUSELD CXXINCLUDE
 CXXFLAGS=()
-LDLIBS=(-luser32 -lgdi32)
+LDLIBS=()
 
 export CXXFLAGS
 export LDLIBS
 
-function ccpl {
+function addlib {
+  local libs_to_add=("$@")
+  for lib in "${libs_to_add[@]}"; do
+    if [[ $lib != "-l"* ]]; then
+      lib="-l$lib"
+    fi
+    LDLIBS+=("$lib")
+  done
+}
+function removelib {
+  local libs_to_remove=("$@")
+  for lib in "${libs_to_remove[@]}"; do
+    if [[ $lib != "-l"* ]]; then
+      lib="-l$lib"
+    fi
+    for (( i=1; i<${#LDLIBS[@]}; i++ )); do
+      if [[ "${LDLIBS[$i]}" == "$lib" ]]; then
+        unset 'LDLIBS[$i]'
+        LDLIBS[$i]=()
+      fi
+    done
+  done
+}
+
+function showlibs {
+  for lib in "${LDLIBS[@]}"; do
+    echo "$lib"
+  done
+}
+
+function ccompile {
   $CC -std=$CCSTD -I$CXXINCLUDE "$@" ${LDLIBS[@]}
 }
 
-function cxxpl {
-  $CXX -std=$CXXSTD -stdlib=$CXXSTDLIB -rtlib=$CXXRTLIB -fuse-ld=$CXXUSELD -I$CXXINCLUDE ${CXXFLAGS[@]} "$@" ${LDLIBS[@]}
+function cxxcompile {
+  $CXX -std=${CXXSTD} -stdlib=${CXXSTDLIB} -rtlib=${CXXRTLIB} -fuse-ld=${CXXUSELD} -I${CXXINCLUDE} ${CXXFLAGS[@]} "$@" ${LDLIBS[@]}
 }
 
-function set_cpl {
+function setcompile {
   
   case "$1" in
-    c|C) alias cpl=ccpl;;
-    c++|C++|cxx|CXX|cpp|CPP) alias cpl=cxxpl;;
+    c|C) alias compile=ccompile;;
+    c++|C++|cxx|CXX|cpp|CPP) alias compile=cxxcompile;;
     *) echo "set_cpl: Unknown Argument: '$1'"
       echo "set_cpl: Available options: c, C, c++, C++, cxx, CXX, cpp, CPP"
       ;;
   esac
-
-  if [[ -z $(alias cpl 2>/dev/null) ]]; then
-    alias cpl=cxxpl
-  fi
 }
-set_cpl C++
+
+if [[ -z $(alias compile 2>/dev/null) ]]; then
+  alias compile=cxxcompile
+fi
