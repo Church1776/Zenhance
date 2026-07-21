@@ -132,24 +132,29 @@ function showlibs {
 }
 
 function addipath {
-  local args=("$@")
-  for a in "${args[@]}"; do
-    if [[ ! -d $a ]]; then
+  local ipaths=("$@")
+  for ipath in "${ipaths[@]}"; do
+    if [[ ! -d $ipath ]]; then
       continue
     fi
-    a="-I$(realpath $a)"
-    CXXINCLUDE+=("$a")
+    ipath="-I$(realpath $ipath)"
+    CXXINCLUDE+=("$ipath")
     done
 }
 
 function removeipath {
-  local args=("$@")
-  for a in "${args[@]}"; do
-    if [[ ! -d $a ]]; then
+  local ipaths=("$@")
+  for ipath in "${ipaths[@]}"; do
+    if [[ ! -d $ipath ]]; then
       continue
     fi
-    a="-I$(realpath $a)"
-  CXXINCLUDE+=("$a")
+    ipath="-I$(realpath $ipath)"
+    for (( i=1; i<${#CXXINCLUDE[@]}; ++i )); do
+      if [[ ${CXXINCLUDE[$i]} == $ipath ]]; then
+      unset 'CXXINCLUDE[$i]'
+      CXXINCLUDE[$i]=()
+      fi
+    done
   done
 }
 
