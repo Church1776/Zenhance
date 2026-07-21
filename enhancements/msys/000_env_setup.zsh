@@ -101,6 +101,9 @@ export LDLIBS
 function addlib {
   local libs_to_add=("$@")
   for lib in "${libs_to_add[@]}"; do
+    if [[ ! -f $(which ${lib//-l/}.dll) ]]; then
+      continue
+    fi
     if [[ $lib != "-l"* ]]; then
       lib="-l$lib"
     fi
@@ -128,12 +131,38 @@ function showlibs {
   done
 }
 
+function addipath {
+  local args=("$@")
+  for a in "${args[@]}"; do
+    if [[ ! -d $a ]]; then
+      continue
+    fi
+    a="-I$(realpath $a)"
+    CXXINCLUDE+=("$a")
+    done
+}
+
+function removeipath {
+  local args=("$@")
+  for a in "${args[@]}"; do
+    if [[ ! -d $a ]]; then
+      continue
+    fi
+    a="-I$(realpath $a)"
+  CXXINCLUDE+=("$a")
+  done
+}
+
 function ccompile {
   $CC -std=$CCSTD -I$CXXINCLUDE "$@" ${LDLIBS[@]}
 }
 
 function cxxcompile {
-  $CXX -std=${CXXSTD} -stdlib=${CXXSTDLIB} -rtlib=${CXXRTLIB} -fuse-ld=${CXXUSELD} -I${CXXINCLUDE} ${CXXFLAGS[@]} "$@" ${LDLIBS[@]}
+  $CXX ${CXXSTD:+"-std=$CXXSTD"} ${CXXSTDLIB:+"-stdlib=$CXXSTDLIB"} ${CXXRTLIB:+"-rtlib=$CXXRTLIB"} ${CXXUSELD:+"-fuse-ld=$CXXUSELD"} ${CXXINCLUDE} ${CXXFLAGS[@]} -c "$@" ${LDLIBS[@]}
+}
+
+function clink {
+  $CXX -std=${CXXSTD} -stdlib=${CXXSTDLIB} -rtlib=${CXXRTLIB} -fuse-ld=${CXXUSELD} "$@" ${LDLIBS[@]}
 }
 
 function setcompile {
