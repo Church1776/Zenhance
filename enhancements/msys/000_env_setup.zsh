@@ -116,7 +116,7 @@ function removelib {
     if [[ $lib != "-l"* ]]; then
       lib="-l$lib"
     fi
-    for (( i=1; i<${#LDLIBS[@]}; i++ )); do
+    for (( i=1; i<=${#LDLIBS[@]}; i++ )); do
       if [[ "${LDLIBS[$i]}" == "$lib" ]]; then
         unset 'LDLIBS[$i]'
         LDLIBS[$i]=()

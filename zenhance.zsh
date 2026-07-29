@@ -115,13 +115,13 @@ function precmd {
   fi
 
   if [[ $PWD == "/"[a-z] && -n $MSYSTEM && $PWD != ${MROOT}* || $PWD == "/"[a-z]/* && -n $MSYSTEM && $PWD != ${MROOT}* || $PWD == "/mnt/"[a-z] && -n $WSL_DISTRO_NAME || $PWD == "/mnt/"[a-z]/* && -n $WSL_DISTRO_NAME ]]; then
-    PROMPT="%{${ink[$name]}%}%n%{${ink[$AT]}%}@%{${ink[$machine]}%}%m%{${ink[$colon]}%}:%{${ink[$system_env]}%}$USYSTEM%{${ink[$colon]}%}:%{${ink[$win32_path]}%}${PWD/$WHOME/~}%{${ink[$win32_Z]}%}%#${ink[reset]} ${git_branch_info}"
+    PROMPT="%{${ink[$name]}%}%n%{${ink[$AT]}%}@%{${ink[$machine]}%}%m%{${ink[$colon]}%}:%{${ink[$system_env]}%}$USYSTEM%{${ink[$colon]}%}:%{${ink[$win32_path]}%}${PWD/$WHOME/~}%{${ink[$win32_Z]}%}%#%{${ink[reset]}%} ${git_branch_info}"
   else
     if [[ $PWD == $MROOT && -n $MSYSTEM ]]; then
       cd - &>/dev/null
       cd / &>/dev/null
     fi
-    PROMPT="%{${ink[$name]}%}%n%{${ink[$AT]}%}@%{${ink[$machine]}%}%m%{${ink[$colon]}%}:%{${ink[$system_env]}%}$USYSTEM%{${ink[$colon]}%}:%{${ink[$unix_path]}%}%~%{${ink[$unix_Z]}%}%#${ink[reset]} ${git_branch_info}"
+    PROMPT="%{${ink[$name]}%}%n%{${ink[$AT]}%}@%{${ink[$machine]}%}%m%{${ink[$colon]}%}:%{${ink[$system_env]}%}$USYSTEM%{${ink[$colon]}%}:%{${ink[$unix_path]}%}%~%{${ink[$unix_Z]}%}%#%{${ink[reset]}%} ${git_branch_info}"
   fi
   return
 }
