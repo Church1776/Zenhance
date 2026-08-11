@@ -39,6 +39,7 @@ typeset -gA ink=(
   navy            $'\033[38;5;17m'
   maroon          $'\033[38;5;124m'
   lavender        $'\033[38;5;225m'
+  vanilla         $'\033[38;5;229m'
   beige           $'\033[38;5;230m'
   salmon          $'\033[38;5;209m'
   skyblue         $'\033[38;5;117m'

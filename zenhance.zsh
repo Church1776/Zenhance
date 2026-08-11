@@ -2,15 +2,17 @@
 
 # Z Shell easy color modifiers for changing the terminal user prompt.
 usys=$(uname ${MSYSTEM:+'-o'}) # Check for MSYS2 environment to use 'Msys' for certain display functions.
-name=${name:-'turquoise'}
-AT=${AT:-'brightgreen'}
-machine=${machine:-'mint'}
-system_env=${system_env:-'periwinkle'}
-unix_path=${unix_path:-'gold'}
-unix_Z=${unix_Z:-'brightergold'}
+name=${name:-'orange'}
+AT=${AT:-'amber'}
+machine=${machine:-'vanilla'}
+system_env=${system_env:-'slateblue'}
+unix_path=${unix_path:-'turquoise'}
+unix_Z=${unix_Z:-'mint'}
 win32_path=${win32_path:-'cerulean'}
 win32_Z=${win32_Z:-'brighterskyblue'}
 vcs_branch=${vcs_branch:-'gray'}
+vcs_2nd=${vcs_2nd:-'lightgray'}
+vcs_3rd=${vcs_3rd:-'reset'}
 colon=${colon:-'gray'}
 
 # Cursor styles (uncomment one)
@@ -107,7 +109,7 @@ function precmd {
         git_hash_length=${#git_short_hash_id}
       fi
         read -k $git_hash_length -r git_branch_info "$git_repo_root/.git/HEAD"
-        git_branch_info="HEAD@${git_branch_info:0:$git_hash_length}"
+        git_branch_info="HEAD%{${ink[$vcs_2nd]}%}@%{${ink[$vcs_3rd]}%}${git_branch_info:0:$git_hash_length}%{${ink[$vcs_branch]}%}"
     fi
     if [[ -n $git_branch_info ]]; then
       git_branch_info="%{${ink[$vcs_branch]}%}($git_branch_info)%{${ink[reset]}%} "
