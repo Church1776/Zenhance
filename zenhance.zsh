@@ -120,8 +120,13 @@ function precmd {
     PROMPT="%{${ink[$name]}%}%n%{${ink[$AT]}%}@%{${ink[$machine]}%}%m%{${ink[$colon]}%}:%{${ink[$system_env]}%}$USYSTEM%{${ink[$colon]}%}:%{${ink[$win32_path]}%}${PWD/$WHOME/~}%{${ink[$win32_Z]}%}%#%{${ink[reset]}%} ${git_branch_info}"
   else
     if [[ $PWD == $MROOT && -n $MSYSTEM ]]; then
-      cd - &>/dev/null
+      TMPPWD="${OLDPWD#$MROOT}"
       cd / &>/dev/null
+      OLDPWD="$TMPPWD"
+    elif [[ $PWD == ${MROOT}* && -n $MSYSTEM ]]; then
+      TMPPWD="${OLDPWD#$MROOT}"
+      cd ${PWD#$MROOT} 2>/dev/null
+      OLDPWD="$TMPPWD"
     fi
     PROMPT="%{${ink[$name]}%}%n%{${ink[$AT]}%}@%{${ink[$machine]}%}%m%{${ink[$colon]}%}:%{${ink[$system_env]}%}$USYSTEM%{${ink[$colon]}%}:%{${ink[$unix_path]}%}%~%{${ink[$unix_Z]}%}%#%{${ink[reset]}%} ${git_branch_info}"
   fi
