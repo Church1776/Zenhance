@@ -10,9 +10,9 @@ unix_path=${unix_path:-'turquoise'}
 unix_Z=${unix_Z:-'mint'}
 win32_path=${win32_path:-'cerulean'}
 win32_Z=${win32_Z:-'brighterskyblue'}
-vcs_branch=${vcs_branch:-'gray'}
-vcs_2nd=${vcs_2nd:-'lightgray'}
-vcs_3rd=${vcs_3rd:-'reset'}
+vcs_clr=${vcs_clr:-'gray'}
+vcs_cl2=${vcs_cl2:-'lightgray'}
+vcs_cl3=${vcs_cl3:-'reset'}
 colon=${colon:-'gray'}
 
 # Cursor styles (uncomment one)
@@ -60,20 +60,20 @@ if [[ $usys == 'Linux' ]]; then
 fi
 
 # Check if in a git repository and grab the root directory for the precmd function.
-git_repo_root=""
-git_worktree_path=""
-git_branch_info=""
-git_hash_length=""
+vcs_root=""
+vcs_data=""
+vcs_branch=""
+vcs_hash_length=""
 cached_usystem=""
 cached_directory=""
 if git rev-parse --show-toplevel &>/dev/null; then
-  git_repo_root="$(git rev-parse --show-toplevel 2>/dev/null)"
+  vcs_root="$(git rev-parse --show-toplevel 2>/dev/null)"
 
 fi
 
 # Pre-Command Function for the prompt.
 function precmd {
-  if [[ "$USYSTEM" != "$cached_usystem" ]]; then
+  if [[ "$USYSTEM" != "$cached_usystem" || -z $USYSTEM ]]; then
     if [[ $usys == 'Msys' ]]; then
       case $MSYSTEM in
         CLANG64)NAME='Clang64';;
@@ -87,46 +87,47 @@ function precmd {
       cached_usystem="$USYSTEM"
     fi
   fi
-  if [[ $PWD != $cached_directory ]] && [[ $PWD != $git_repo_root || $PWD != $git_repo_root/* ]]; then
-    git_repo_root=""
-    git_worktree_path=""
-    git_branch_info=""
-    git_hash_length=""
+  if [[ $PWD != $cached_directory ]] && [[ $PWD == $vcs_root/* && -e "$PWD/.git" || $PWD != $vcs_root/* && $PWD != $vcs_root ]]; then
+    vcs_root=""
+    vcs_data=""
+    vcs_branch=""
+    vcs_hash_length=""
     local tempPWD=$PWD
     while [[ -n $tempPWD && $tempPWD != "/" ]]; do
       if [[ -e "$tempPWD/.git" ]]; then
-        git_repo_root="$tempPWD"
+        vcs_root="$tempPWD"
         break
       fi
       tempPWD="${tempPWD:h}"
     done
   fi
-  if [[ -n $git_repo_root ]]; then
-    if [[ ! -d "$git_repo_root/.git" && -z $git_worktree_path ]]; then
-      read -r git_worktree_path < "$git_repo_root/.git"
-      git_worktree_path="${git_worktree_path#gitdir: }"
+  if [[ -n $vcs_root ]]; then
+    if [[ ! -d "$vcs_root/.git" && -z $vcs_data ]]; then
+      read -r vcs_data < "$vcs_root/.git"
+      vcs_data="${vcs_data#gitdir: }"
     fi
-    read -r git_branch_info < "${git_worktree_path:-$git_repo_root/.git}/HEAD"
-    if [[ $git_branch_info != ref:\ refs/heads/* ]]; then
-      if [[ -z $git_hash_length ]]; then
-        local git_short_hash_id="$(git rev-parse --short HEAD 2>/dev/null)"
-        git_hash_length=${#git_short_hash_id}
+    read -r vcs_branch < "${vcs_data:-$vcs_root/.git}/HEAD"
+    if [[ $vcs_branch == ref:\ refs/heads/* ]]; then
+      vcs_branch="${vcs_branch#ref: refs/heads/}"
+    else
+      if [[ -z $vcs_hash_length ]]; then
+        vcs_hash_length="$(git rev-parse --short HEAD 2>/dev/null)"
+        vcs_hash_length=${#vcs_hash_length}
       fi
-        git_branch_info="HEAD%{${ink[$vcs_2nd]}%}@%{${ink[$vcs_3rd]}%}${git_branch_info:0:$git_hash_length}%{${ink[$vcs_branch]}%}"
+      vcs_branch="HEAD%{${ink[$vcs_cl2]}%}@%{${ink[$vcs_cl3]}%}${vcs_branch:0:$vcs_hash_length}%{${ink[$vcs_clr]}%}"
     fi
-    git_branch_info="${git_branch_info#ref: refs/heads/}"
-    git_branch_info="%{${ink[$vcs_branch]}%}($git_branch_info)%{${ink[reset]}%} "
+    vcs_branch="%{${ink[$vcs_clr]}%}($vcs_branch)%{${ink[reset]}%} "
   fi
   if [[ $PWD == /[a-zA-Z] && -n $MSYSTEM && $PWD != $MROOT || $PWD == /[a-zA-Z]/* && -n $MSYSTEM && $PWD != $MROOT/* || $PWD == /mnt/[a-zA-Z] && -n $WSL_DISTRO_NAME || $PWD == /mnt/[a-zA-Z]/* && -n $WSL_DISTRO_NAME ]]; then
     cached_directory="$PWD"
-    PROMPT="%{${ink[$username]}%}%n%{${ink[$AT]}%}@%{${ink[$machine]}%}%m%{${ink[$colon]}%}:%{${ink[$system_env]}%}$USYSTEM%{${ink[$colon]}%}:%{${ink[$win32_path]}%}${PWD/$WHOME/~}%{${ink[$win32_Z]}%}%#%{${ink[reset]}%} ${git_branch_info}"
+    PROMPT="%{${ink[$username]}%}%n%{${ink[$AT]}%}@%{${ink[$machine]}%}%m%{${ink[$colon]}%}:%{${ink[$system_env]}%}$USYSTEM%{${ink[$colon]}%}:%{${ink[$win32_path]}%}${PWD/$WHOME/~}%{${ink[$win32_Z]}%}%#%{${ink[reset]}%} ${vcs_branch}"
   else
     if [[ $PWD == $MROOT && -n $MSYSTEM ]]; then
       cd - &>/dev/null
       cd / &>/dev/null
     fi
     cached_directory="$PWD"
-    PROMPT="%{${ink[$username]}%}%n%{${ink[$AT]}%}@%{${ink[$machine]}%}%m%{${ink[$colon]}%}:%{${ink[$system_env]}%}$USYSTEM%{${ink[$colon]}%}:%{${ink[$unix_path]}%}%~%{${ink[$unix_Z]}%}%#%{${ink[reset]}%} ${git_branch_info}"
+    PROMPT="%{${ink[$username]}%}%n%{${ink[$AT]}%}@%{${ink[$machine]}%}%m%{${ink[$colon]}%}:%{${ink[$system_env]}%}$USYSTEM%{${ink[$colon]}%}:%{${ink[$unix_path]}%}%~%{${ink[$unix_Z]}%}%#%{${ink[reset]}%} ${vcs_branch}"
   fi
   return
 }
