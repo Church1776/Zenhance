@@ -66,68 +66,8 @@ vcs_branch=""
 vcs_hash_length=""
 cached_usystem=""
 cached_directory=""
-if git rev-parse --show-toplevel &>/dev/null; then
-  vcs_root="$(git rev-parse --show-toplevel 2>/dev/null)"
 
-fi
 
 # Pre-Command Function for the prompt.
-function precmd {
-  if [[ "$USYSTEM" != "$cached_usystem" || -z $USYSTEM ]]; then
-    if [[ $usys == 'Msys' ]]; then
-      case $MSYSTEM in
-        CLANG64)NAME='Clang64';;
-        CLANGARM64)NAME='ClangArm64';;
-        MINGW64)NAME='MinGW64';;
-        MINGW32)NAME='MinGW32';;
-        UCRT64)NAME='UCRT64';;
-        MSYS)NAME='Msys';;
-      esac
-      USYSTEM="${NAME:-$usys}"
-      cached_usystem="$USYSTEM"
-    fi
-  fi
-  if [[ $PWD != $cached_directory ]] && [[ $PWD == $vcs_root/* && -e "$PWD/.git" || $PWD != $vcs_root/* && $PWD != $vcs_root ]]; then
-    vcs_root=""
-    vcs_data=""
-    vcs_branch=""
-    vcs_hash_length=""
-    local tempPWD=$PWD
-    while [[ -n $tempPWD && $tempPWD != "/" ]]; do
-      if [[ -e "$tempPWD/.git" ]]; then
-        vcs_root="$tempPWD"
-        break
-      fi
-      tempPWD="${tempPWD:h}"
-    done
-  fi
-  if [[ -n $vcs_root ]]; then
-    if [[ ! -d "$vcs_root/.git" && -z $vcs_data ]]; then
-      read -r vcs_data < "$vcs_root/.git"
-      vcs_data="${vcs_data#gitdir: }"
-    fi
-    read -r vcs_branch < "${vcs_data:-$vcs_root/.git}/HEAD"
-    if [[ $vcs_branch == ref:\ refs/heads/* ]]; then
-      vcs_branch="${vcs_branch#ref: refs/heads/}"
-    else
-      if [[ -z $vcs_hash_length ]]; then
-        vcs_hash_length="$(git rev-parse --short HEAD 2>/dev/null)"
-        vcs_hash_length=${#vcs_hash_length}
-      fi
-      vcs_branch="HEAD%{${ink[$vcs_cl2]}%}@%{${ink[$vcs_cl3]}%}${vcs_branch:0:$vcs_hash_length}%{${ink[$vcs_clr]}%}"
-    fi
-    vcs_branch="%{${ink[$vcs_clr]}%}($vcs_branch)%{${ink[reset]}%} "
-  fi
-  if [[ $PWD == /[a-zA-Z] && -n $MSYSTEM && $PWD != $MROOT || $PWD == /[a-zA-Z]/* && -n $MSYSTEM && $PWD != $MROOT/* || $PWD == /mnt/[a-zA-Z] && -n $WSL_DISTRO_NAME || $PWD == /mnt/[a-zA-Z]/* && -n $WSL_DISTRO_NAME ]]; then
-    cached_directory="$PWD"
-    PROMPT="%{${ink[$username]}%}%n%{${ink[$AT]}%}@%{${ink[$machine]}%}%m%{${ink[$colon]}%}:%{${ink[$system_env]}%}$USYSTEM%{${ink[$colon]}%}:%{${ink[$win32_path]}%}${PWD/$WHOME/~}%{${ink[$win32_Z]}%}%#%{${ink[reset]}%} ${vcs_branch}"
-  else
-    if [[ $PWD == $MROOT && -n $MSYSTEM ]]; then
-      cd - &>/dev/null
-      cd / &>/dev/null
-    fi
-    cached_directory="$PWD"
-    PROMPT="%{${ink[$username]}%}%n%{${ink[$AT]}%}@%{${ink[$machine]}%}%m%{${ink[$colon]}%}:%{${ink[$system_env]}%}$USYSTEM%{${ink[$colon]}%}:%{${ink[$unix_path]}%}%~%{${ink[$unix_Z]}%}%#%{${ink[reset]}%} ${vcs_branch}"
-  fi
-  return
-}
+READY_FOR_PRECMD=1
+source "$(find ${zenhance:A:h}/enhancements/${(L)usys} -type f -name 'precmd.zsh')"
