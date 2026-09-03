@@ -24,9 +24,11 @@ function precmd {
     if [[ $PWD == /[a-zA-Z] && $PWD != $MROOT ]] && [[ $PWD == /[a-zA-Z]/* || $PWD != $MROOT/* ]]; then
       UHOME=$WHOME
       path_color=$win32_path
+      Z_color=$win32_Z
     else
       UHOME=$HOME
       path_color=$unix_path
+      Z_color=$unix_Z
       PWD="${PWD#$MROOT}"
       PWD=${PWD:-/}
     fi
@@ -65,6 +67,6 @@ function precmd {
     vcs_branch="%{${ink[$vcs_clr]}%}($vcs_branch)%{${ink[reset]}%} "
   fi
   cached_directory="$PWD"
-  PROMPT="%{${ink[$username]}%}%n%{${ink[$AT]}%}@%{${ink[$machine]}%}%m%{${ink[$colon]}%}:%{${ink[$system_env]}%}$USYSTEM%{${ink[$colon]}%}:%{${ink[$path_color]}%}${PWD/$UHOME/~}%{${ink[$win32_Z]}%}%#%{${ink[reset]}%} ${vcs_branch}"
+  PROMPT="%{${ink[$username]}%}%n%{${ink[$AT]}%}@%{${ink[$machine]}%}%m%{${ink[$colon]}%}:%{${ink[$system_env]}%}$USYSTEM%{${ink[$colon]}%}:%{${ink[$path_color]}%}${PWD/$UHOME/~}%{${ink[$Z_color]}%}%#%{${ink[reset]}%} ${vcs_branch}"
   return
 }
