@@ -3,18 +3,26 @@ if [[ -z $MSYSTEM ]]; then
 fi
 
 function localtools {
+  local msys_env_bin=""
+  local msys_env_local_bin=""
+
   if [[ $MSYSTEM == 'MSYS' ]]; then
-    return
+    msys_env_bin="/usr/bin"
+    msys_env_local_bin="/usr/local/bin"
   fi
   
-  local msys_env_bin="/${(L)MSYSTEM}/bin"
-  local msys_env_local_bin="/${(L)MSYSTEM}/local/bin"
+  msys_env_bin="${msys_env_bin:-"/${(L)MSYSTEM}/bin"}"
+  msys_env_local_bin="${msys_env_local_bin:-"/${(L)MSYSTEM}/local/bin"}"
   
   if [[ $PATH == *"$msys_env_local_bin"* ]]; then
       return
   fi
   if [[ ! -d $msys_env_local_bin ]]; then
       mkdir -p $msys_env_local_bin
+    if [[ ! -d $msys_env_local_bin ]]; then
+      echo "Failed to create $msys_env_local_bin"
+      return
+    fi
   fi    
   PATH="${PATH//${msys_env_bin}:/${msys_env_local_bin}:${msys_env_bin}:}"
   export PATH="$PATH"
@@ -22,9 +30,31 @@ function localtools {
 localtools
 unset -f localtools
 
+function optztools {
+  local msys_env_local_bin="/usr/local/bin"
+  local msys_opt_zsh_bin="/opt/zsh/bin"
+  if [[ $PATH == *"$msys_opt_zsh_bin"* ]]; then
+    return
+  fi
+  if [[ ! -d $msys_opt_zsh_bin ]]; then
+    mkdir -p $msys_opt_zsh_bin
+    if [[ ! -d $msys_opt_zsh_bin ]]; then
+      echo "Failed to create $msys_opt_zsh_bin"
+      return
+    fi
+  fi
+  PATH="${PATH//${msys_env_local_bin}:/${msys_opt_zsh_bin}:${msys_env_local_bin}:}"
+  export PATH="$PATH"
+}
+optztools
+unset -f optztools
+
 function vscodepath {
   local userprograms="$(cygpath -u ${LOCALAPPDATA})/Programs"
   local vscode_bin_path="$userprograms/Microsoft VS Code/bin"
+  if [[ ! -d $vscode_bin_path ]]; then
+      return
+  fi
   if [[ $PATH == *"$vscode_bin_path"* ]]; then
       return
   fi
@@ -37,6 +67,9 @@ unset -f vscodepath
 function javapath {
   local program="$(cygpath -u $PROGRAMFILES)"
   local java_bin_path="$program/Common Files/Oracle/Java/javapath"
+  if [[ ! -d $java_bin_path ]]; then
+      return
+  fi
   if [[ $PATH == *"$java_bin_path"* ]]; then
       return
   fi
@@ -49,6 +82,9 @@ unset -f javapath
 function vcpkgpath {
   local userprograms="$(cygpath -u ${LOCALAPPDATA})/Programs"
   local vcpkg_bin_path="$userprograms/vcpkg"
+  if [[ ! -d $vcpkg_bin_path ]]; then
+      return
+  fi
   if [[ $PATH == *"$vcpkg_bin_path"* ]]; then
       return
   fi
