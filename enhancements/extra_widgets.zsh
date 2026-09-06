@@ -1,5 +1,5 @@
 #List of functions to create custom zle widgets and bind keys to them.
-function declare_custome_widgets {
+function declare_custom_widgets {
   toggle_overwrite_mode() {
     if [[ -z $_overwrite_mode_in_on__ ]]; then
       _overwrite_mode_in_on__=true
@@ -11,7 +11,7 @@ function declare_custome_widgets {
     zle overwrite-mode
   }
 }
-declare_custome_widgets
+declare_custom_widgets
 
 function create_zle_custom_widgets { 
   zle -N toggle_overwrite_mode

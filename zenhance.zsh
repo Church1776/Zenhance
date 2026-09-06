@@ -46,13 +46,6 @@ function shuser {
   echo -e "${ink[$system_env]}:[Windows]: ${ink[$win32_path]}${WHOME%$USER}${ink[$name]}$USER${ink[reset]}"
 }
 
-# Grab the msys2 root path for the precmd function.
-if [[ -n $MSYSTEM ]]; then
-  MROOT="$(cygpath -m /)"
-  MROOT="/${(L)MROOT//:/}"
-  MROOT="${MROOT%/}"
-fi
-
 # Check for Linux system and grab the distro name for the precmd function.
 if [[ $usys == 'Linux' ]]; then
   source /etc/os-release
@@ -64,6 +57,7 @@ vcs_root=""
 vcs_data=""
 vcs_branch=""
 vcs_hash_length=""
+vcs_cmd_rerun=""
 cached_usystem=""
 cached_directory=""
 
@@ -71,3 +65,5 @@ cached_directory=""
 # Pre-Command Function for the prompt.
 READY_FOR_PRECMD=1
 source "$(find ${zenhance:A:h}/enhancements/${(L)usys} -type f -name 'precmd.zsh')"
+#PROMPT="%{${ink[$username]}%}%n%{${ink[$AT]}%}@%{${ink[$machine]}%}%m%{${ink[$colon]}%}:%{${ink[$system_env]}%}$MSYSTEM%{${ink[$colon]}%}:%{${ink[$unix_path]}%}~%{${ink[$unix_Z]}%}%#%{${ink[reset]}%} "
+  
