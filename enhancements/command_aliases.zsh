@@ -1,9 +1,12 @@
 # Clang command aliases
-typeset -A llvm_aliases=(
+if [[ -z $llvm_aliases ]]; then
+  typeset -A llvm_aliases
+fi
+llvm_aliases+=(
   [lladdr2line]="llvm-addr2line"
   [llar]="llvm-ar"
   [llbolt]="llvm-bolt"
-  [llbc]="llvm-bcanalyzer"
+  [llbcanalyzer]="llvm-bcanalyzer"
   [llas]="llvm-as"
   [lldis]="llvm-dis"
   [llmc]="llvm-mc"
@@ -23,8 +26,12 @@ typeset -A llvm_aliases=(
   [llwindres]="llvm-windres"
   [lldwarfdump]="llvm-dwarfdump"
   [llsplit]="llvm-split"
+  [llsymbolizer]="llvm-symbolizer"
 )
-typeset -A clang_aliases=(
+if [[ -z $clang_aliases ]]; then
+  typeset -A clang_aliases
+fi
+clang_aliases+=(
   [clcpp]="clang-cpp"
   [cldoc]="clang-doc"
   [cltidy]="clang-tidy"
@@ -34,7 +41,10 @@ typeset -A clang_aliases=(
   [clquery]="clang-query"
   [clapply]="clang-apply-replacements"
 )
-typeset -A mlir_aliases=(
+if [[ -z $mlir_aliases ]]; then
+  typeset -A mlir_aliases
+fi
+mlir_aliases+=(
   [mlopt]="mlir-opt"
   [mlpdll]="mlir-pdll"
   [mlirlsp]="mlir-lsp-server"
@@ -45,7 +55,10 @@ typeset -A mlir_aliases=(
   [mltblgen]="mlir-tblgen"
   [mltranslate]="mlir-translate"
 )
-typeset -A spirv_aliases=(
+if [[ -z $spirv_aliases ]]; then
+  typeset -A spirv_aliases
+fi
+spirv_aliases+=(
   [spvas]="spirv-as"
   [spvcfg]="spirv-cfg"
   [spvdiff]="spirv-diff"
@@ -57,16 +70,25 @@ typeset -A spirv_aliases=(
   [spvopt]="spirv-opt"
   [spvval]="spirv-val"
 )
-typeset -A coreutil_aliases=(
+if [[ -z $coreutil_aliases ]]; then
+  typeset -A coreutil_aliases
+fi
+coreutil_aliases+=(
   [ls]="ls --color=auto"
   [la]="ls -a --color=auto"
   [ll]="ls -lAh --color=auto"
   [lst]="ls -1 --color=auto"
   [lsta]="ls -1A --color=auto"
 )
-typeset -A builtin_aliases=(
+if [[ -z $builtin_aliases ]]; then
+  typeset -A builtin_aliases
+fi
+builtin_aliases+=(
 )
-typeset -A custom_aliases=(
+if [[ -z $custom_aliases ]]; then
+  typeset -A custom_aliases
+fi
+custom_aliases+=(
   [premake]="premake5"
 )
 
@@ -75,24 +97,11 @@ function add_utility_aliases {
   local -A r_arr=(${(@Pkv)1})
   for tool in ${(@k)r_arr}; do
     local toolcmd="${r_arr[$tool]}"
-    (( $+commands[$toolcmd] )) || continue
+    (( $+commands[$toolcmd] )) || (( $+builtins[$toolcmd] )) || (( $+functions[$toolcmd] )) || continue
     local toolalias="$tool"
     [[ "$toolalias" != "$toolcmd" ]] || continue
     [[ -z "$(alias "$toolalias")" ]] || continue
     if ! alias "$toolalias"="$toolcmd" 2>/dev/null; then
-      echo "Failed to create alias: $toolalias -> $toolcmd."
-    fi
-  done
-}
-
-function add_qualifier_aliases {
-  local -A r_arr=(${(@Pkv)1})
-  for tool in ${(@k)r_arr}; do
-    local toolcmd="${r_arr[$tool]}"
-    local toolalias="$tool"
-    [[ "$toolalias" != "$toolcmd" ]] || continue
-    [[ -z "$(alias "$toolalias")" ]] || continue
-    if ! alias "$toolalias"="$toolcmd" &>/dev/null; then
       echo "Failed to create alias: $toolalias -> $toolcmd."
     fi
   done
@@ -104,9 +113,9 @@ function load_shell_aliases {
   add_utility_aliases clang_aliases
   add_utility_aliases mlir_aliases
   add_utility_aliases spirv_aliases
-  add_qualifier_aliases coreutil_aliases
-  add_qualifier_aliases builtin_aliases
-  add_qualifier_aliases custom_aliases
+  add_utility_aliases coreutil_aliases
+  add_utility_aliases builtin_aliases
+  add_utility_aliases custom_aliases
 }
 load_shell_aliases
 
