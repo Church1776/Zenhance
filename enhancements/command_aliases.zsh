@@ -136,6 +136,7 @@ load_shell_aliases
 
 # Cleanup all values to keep the shell environment clean
 unset -f add_utility_aliases
+unset -f add_qualifier_aliases
 unset -f load_shell_aliases
 
 unset llvm_aliases
