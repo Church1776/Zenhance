@@ -23,6 +23,7 @@ llvm_aliases+=(
   [llreadobj]="llvm-readobj"
   [llsize]="llvm-size"
   [llc++filt]="llvm-cxxfilt"
+  [llcxxfilt]="llvm-cxxfilt"
   [llwindres]="llvm-windres"
   [lldwarfdump]="llvm-dwarfdump"
   [llsplit]="llvm-split"
@@ -75,7 +76,7 @@ if [[ -z $coreutil_aliases ]]; then
 fi
 coreutil_aliases+=(
   [ls]="ls --color=auto"
-  [la]="ls -a --color=auto"
+  [la]="ls -ah --color=auto"
   [ll]="ls -lAh --color=auto"
   [lst]="ls -1 --color=auto"
   [lsta]="ls -1A --color=auto"
@@ -94,15 +95,29 @@ custom_aliases+=(
 
 # Functions to add aliases
 function add_utility_aliases {
-  local -A r_arr=(${(@Pkv)1})
-  for tool in ${(@k)r_arr}; do
-    local toolcmd="${r_arr[$tool]}"
-    (( $+commands[$toolcmd] )) || (( $+builtins[$toolcmd] )) || (( $+functions[$toolcmd] )) || continue
-    local toolalias="$tool"
-    [[ "$toolalias" != "$toolcmd" ]] || continue
-    [[ -z "$(alias "$toolalias")" ]] || continue
-    if ! alias "$toolalias"="$toolcmd" 2>/dev/null; then
-      echo "Failed to create alias: $toolalias -> $toolcmd."
+  local -A pairs=(${(@Pkv)1})
+  for key in ${(@k)pairs}; do
+    local keycmd="${pairs[$key]}"
+    (( $+commands[$keycmd] )) || (( $+builtins[$keycmd] )) || (( $+functions[$keycmd] )) || continue
+    local keyalias="$key"
+    [[ "$keyalias" != "$keycmd" ]] || continue
+    [[ -z "$(alias "$keyalias")" ]] || continue
+    if ! alias "$keyalias"="$keycmd" 2>/dev/null; then
+      echo "Failed to create alias: $keyalias -> $keycmd."
+    fi
+  done
+}
+
+# Functions to add qualifier aliases for coreutils
+function add_qualifier_aliases {
+  local -A pairs=(${(@Pkv)1})
+  for key in ${(@k)pairs}; do
+    local keycmd="${pairs[$key]}"
+    local keyalias="$key"
+    [[ "$keyalias" != "$keycmd" ]] || continue
+    [[ -z "$(alias "$keyalias")" ]] || continue
+    if ! alias "$keyalias"="$keycmd" 2>/dev/null; then
+      echo "Failed to create alias: $keyalias -> $keycmd."
     fi
   done
 }
@@ -113,7 +128,7 @@ function load_shell_aliases {
   add_utility_aliases clang_aliases
   add_utility_aliases mlir_aliases
   add_utility_aliases spirv_aliases
-  add_utility_aliases coreutil_aliases
+  add_qualifier_aliases coreutil_aliases
   add_utility_aliases builtin_aliases
   add_utility_aliases custom_aliases
 }
@@ -121,7 +136,6 @@ load_shell_aliases
 
 # Cleanup all values to keep the shell environment clean
 unset -f add_utility_aliases
-unset -f add_qualifier_aliases
 unset -f load_shell_aliases
 
 unset llvm_aliases
