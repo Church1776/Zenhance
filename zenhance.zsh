@@ -2,18 +2,18 @@
 
 # Z Shell easy color modifiers for changing the terminal user prompt.
 usys=$(uname ${MSYSTEM:+'-o'}) # Check for MSYS2 environment to use 'Msys' for certain display functions.
-username=${username:-'orange'}
-AT=${AT:-'amber'}
-machine=${machine:-'vanilla'}
-system_env=${system_env:-'slateblue'}
-unix_path=${unix_path:-'turquoise'}
-unix_Z=${unix_Z:-'mint'}
-win32_path=${win32_path:-'cerulean'}
-win32_Z=${win32_Z:-'brighterskyblue'}
-vcs_clr=${vcs_clr:-'gray'}
-vcs_cl2=${vcs_cl2:-'lightgray'}
+username=${username:-'208'}
+AT=${AT:-'214'}
+machine=${machine:-'228'}
+system_env=${system_env:-'62'}
+unix_path=${unix_path:-'35'}
+unix_Z=${unix_Z:-'84'}
+win32_path=${win32_path:-'33'}
+win32_Z=${win32_Z:-'51'}
+vcs_clr=${vcs_clr:-'245'}
+vcs_cl2=${vcs_cl2:-'250'}
 vcs_cl3=${vcs_cl3:-'reset'}
-colon=${colon:-'gray'}
+colon=${colon:-'245'}
 
 # Cursor styles (uncomment one)
 #printf '\e[0 q'         # Default (terminal-dependent)
