@@ -90,6 +90,7 @@ if [[ -z $custom_aliases ]]; then
   typeset -A custom_aliases
 fi
 custom_aliases+=(
+  [make]="mingw32-make"
   [premake]="premake5"
 )
 
