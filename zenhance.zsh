@@ -24,14 +24,38 @@ printf '\e[3 q'  # Blinking underline
 #printf '\e[5 q'  # Blinking bar (I-beam)
 #printf '\e[6 q'         # Steady bar (recommended for modern terminals)
 
+# Configure completion to be case insensitive.
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+
+ZENHANCE="${${(%):-%N}:A:h}"
+ZINITDIR=""
+
+# Move to Zenhance directory for handling dependancy paths.
+if [[ ! "$PWD" == "$ZENHANCE" ]]; then
+  ZINITDIR="$PWD"
+  cd "$ZENHANCE"
+fi
+
+# Check for Zsh RC file. If no file exists copy repo .zshrc file to HOME. If ~/.zshrc doesn't source this file, append a line for sourcing.
+if [[ ! -s "$HOME/.zshrc" ]]; then
+  cp "$ZENHANCE/zshrc.zsh" "$HOME/.zshrc";
+fi
+ZENFILE="$(grep 'zenhance.zsh' "$HOME/.zshrc" 2>/dev/null | sed 's/source //g' 2>/dev/null)"
+ZENFILE=${${ZENFILE//'~'/$HOME}//'"'/}
+if [[ ! -f $ZENFILE ]]; then
+  echo "source $ZENHANCE/zenhance.zsh" >> "$HOME/.zshrc"
+fi
+
+# Check for other packages needed to complete ZENHANCE setup.
+source "$ZENHANCE/dependancy_installer.zsh"
+
 # Configure Windows home directory. I'm Assuming the Windows environment is available to the User.
 [[ $usys == 'Msys' ]] && WHOME=$(cygpath -u ${WINDIR%%\\*})/Users/$USER
 WHOME=${WHOME:-"$(find /mnt -maxdepth 3 -type d -name "$USER" 2>/dev/null)"}
 
 # Initialize shell configurations relative to script's location.
-zenhance="${(%):-%N}" &>/dev/null
-configs=($(find ${zenhance:A:h}/enhancements/${(L)usys} -type f -name '*.zsh'))
-configs+=($(find ${zenhance:A:h}/enhancements -maxdepth 1 -type f -name '*.zsh' ))
+configs=($(find "$ZENHANCE/enhancements/${(L)usys}" -type f -name '*.zsh'))
+configs+=($(find "$ZENHANCE/enhancements" -maxdepth 1 -type f -name '*.zsh' ))
 if [[ -n $configs ]]; then
   for config in ${(@)configs[@]}; do
     [[ -f $config ]] && source $config
@@ -61,9 +85,11 @@ vcs_cmd_rerun=""
 cached_usystem=""
 cached_directory=""
 
-
-# Pre-Command Function for the prompt.
+# Return User to their original location and grab Pre-Command function for the prompt.
+if [[ -n "$ZINITDIR" ]]; then
+  cd "$ZINITDIR"
+  unset ZINITDIR
+fi
 READY_FOR_PRECMD=1
-source "$(find ${zenhance:A:h}/enhancements/${(L)usys} -type f -name 'precmd.zsh')"
-#PROMPT="%{${ink[$username]}%}%n%{${ink[$AT]}%}@%{${ink[$machine]}%}%m%{${ink[$colon]}%}:%{${ink[$system_env]}%}$MSYSTEM%{${ink[$colon]}%}:%{${ink[$unix_path]}%}~%{${ink[$unix_Z]}%}%#%{${ink[reset]}%} "
-  
+source "$(find $ZENHANCE/enhancements/${(L)usys} -type f -name 'precmd.zsh')"
+unset READY_FOR_PRECMD
