@@ -257,18 +257,49 @@ typeset -gA ink=(
   '253'     $'\033[38;5;253m'
   '254'     $'\033[38;5;254m'
   '255'     $'\033[38;5;255m'
-  reset           $'\033[0m'
+  reset            $'\033[0m'
 )
 function shcolors {
-
+  local codes=("$@")
+  local reset=""
   if [[ -z $ink ]]; then
     echo ":[info]: No colors found."
+    return 1
+  fi
+  if [[ -z $codes ]]; then
+    echo "Colors loaded:"
+    for (( i = 0; i < 256; i++ )); do
+      color="$i"
+      echo -e "${ink[$color]}Color Code: $color${ink[reset]}"
+    done
+    echo -e "${ink[reset]}Color Code: reset${ink[reset]}"
     return
   fi
-  echo "Colors loaded:"
-  for (( i = 0; i < 255; i++ )); do
-    color="$i"
-    echo -e "${ink[$color]}Color Code: $color${ink[reset]}"
+  for code in "${codes[@]}"; do
+    [[ $code == 'reset' ]] && reset=" (256)"
+    echo -e "${ink[$code]}Color Code: $code$reset${ink[reset]}"
   done
-  echo ""
+}
+function cmpcolors {
+  local codes=("${(@s.,.)@}")
+  local translated_codes=()
+  if [[ -z $codes ]]; then
+    echo ":[info]: No color codes specified."
+    return 1
+  fi
+  for code in "${codes[@]}"; do
+    case $code in
+      *'..'*|*'-'*|*':'*)
+        [[ "${code##*[-.:]}" == 'reset' ]] && code="${code%%[-.:]*}..256"
+        for (( i = ${code%%[-.:]*}; i <= ${code##*[-.:]}; i++ )); do
+          [[ "$i" -eq '256' ]] && translated_codes+=("reset") && continue
+          translated_codes+=("$i")
+        done
+        continue
+      ;;
+    esac
+    translated_codes+=("$code")
+  done
+  shcolors "${translated_codes[@]}"
+  return
 }
