@@ -1,7 +1,7 @@
 #!/usr/bin/zsh
 
 # Z Shell easy color modifiers for changing the terminal user prompt.
-usys=$(uname ${MSYSTEM:+'-o'}) # Check for MSYS2 environment to use 'Msys' for certain display functions.
+usys=$(uname ${MSYSTEM:+'-o'}) # If MSYSTEM exists: Use -o flag to get value 'Msys' to correctly express the desired configuration.
 username=${username:-'208'}
 AT=${AT:-'214'}
 machine=${machine:-'228'}
@@ -51,8 +51,10 @@ source "$ZENHANCE/dependancies/setup.zsh"
 source "$ZENHANCE/dependancies/validator.zsh"
 
 # Configure Windows home directory. I'm Assuming the Windows environment is available to the User.
-[[ $usys == 'Msys' ]] && WHOME=$(cygpath -u ${WINDIR%%\\*})/Users/$USER
-WHOME=${WHOME:-"$(find /mnt -maxdepth 3 -type d -name "$USER" 2>/dev/null)"}
+case $usys in
+  Msys) WHOME=$(cygpath -u ${WINDIR%%\\*})/Users/$USER;;
+  Linux) WHOME="$(find /mnt -maxdepth 2 -type d -name "Users" 2>/dev/null)"; WHOME="${WHOME:+$WHOME/$USER}";;
+esac
 
 # Initialize shell configurations relative to script's location.
 configs=($(find "$ZENHANCE/enhancements/${(L)usys}" -type f -name '*.zsh'))
@@ -70,12 +72,6 @@ function shuser {
   [[ -n $WHOME ]] || return
   echo -e "${ink[$system_env]}:[Windows]: ${ink[$win32_path]}${WHOME%$USER}${ink[$name]}$USER${ink[reset]}"
 }
-
-# Check for Linux system and grab the distro name for the precmd function.
-if [[ $usys == 'Linux' ]]; then
-  source /etc/os-release
-  NAME="$NAME"
-fi
 
 # Check if in a git repository and grab the root directory for the precmd function.
 vcs_root=""
