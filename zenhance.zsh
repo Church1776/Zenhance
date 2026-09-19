@@ -47,7 +47,8 @@ if [[ ! -f $ZENFILE ]]; then
 fi
 
 # Check for other packages needed to complete ZENHANCE setup.
-source "$ZENHANCE/dependancy_installer.zsh"
+source "$ZENHANCE/dependancies/setup.zsh"
+source "$ZENHANCE/dependancies/validator.zsh"
 
 # Configure Windows home directory. I'm Assuming the Windows environment is available to the User.
 [[ $usys == 'Msys' ]] && WHOME=$(cygpath -u ${WINDIR%%\\*})/Users/$USER
@@ -90,6 +91,10 @@ if [[ -n "$ZINITDIR" ]]; then
   cd "$ZINITDIR"
   unset ZINITDIR
 fi
+
+# Source post-enhance configurations.
+source "$ZENHANCE/dependancies/post_enhance_configs.zsh"
+
 READY_FOR_PRECMD=1
 source "$(find $ZENHANCE/enhancements/${(L)usys} -type f -name 'precmd.zsh')"
 unset READY_FOR_PRECMD
