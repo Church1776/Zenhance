@@ -261,6 +261,7 @@ typeset -gA ink=(
 )
 function shcolors {
   local codes=("$@")
+  local errcode=""
   local reset=""
   if [[ -z $ink ]]; then
     echo ":[info]: No colors found."
@@ -276,6 +277,24 @@ function shcolors {
     return
   fi
   for code in "${codes[@]}"; do
+    if [[ $code == [/-]* ]]; then
+      case $code in
+        -h|--help|'/?'|/help)flagcode='help'; errcode=0;;
+        *) flagcode='Unknown Option'; errcode=1;;
+      esac
+    fi
+    case $flagcode in
+      'Unknown Option')
+        echo ":[error]: Unknown option: $code"
+        ;&
+      'help')
+        printf '%s\n' \
+        'Usage: shcolors [optional] [color] [codes]' \
+        'Ex: shcolors 1 2 3 4 5' \
+        'Ex: shcolors'
+        return $errcode
+        ;;
+    esac
     [[ $code == 'reset' ]] && reset=" (256)"
     echo -e "${ink[$code]}Color Code: $code$reset${ink[reset]}"
   done
@@ -283,15 +302,25 @@ function shcolors {
 function cmpcolors {
   local codes=("${(@s.,.)@}")
   local translated_codes=()
+  local errcode=""
   if [[ -z $codes ]]; then
-    echo ":[info]: No color codes specified."
+    echo ":[error]: No color codes specified."
+    errcode="help"
     return 1
   fi
+  case $errcode in
+    help)
+      printf '%s\n' \
+      'Usage: cmpcolors [color] [codes] [code..range]' \
+      'Ex: cmpcolors 1 2 3 4 5' \
+      'Ex: cmpcolors 1..5' 
+      ;;
+  esac
   for code in "${codes[@]}"; do
     case $code in
-      *'..'*|*'-'*|*':'*)
-        [[ "${code##*[-.:]}" == 'reset' ]] && code="${code%%[-.:]*}..256"
-        for (( i = ${code%%[-.:]*}; i <= ${code##*[-.:]}; i++ )); do
+      *'..'*)
+        [[ "${code##*..}" == 'reset' ]] && code="${code%%..*}..256"
+        for (( i = ${code%%..*}; i <= ${code##*..}; i++ )); do
           [[ "$i" -eq '256' ]] && translated_codes+=("reset") && continue
           translated_codes+=("$i")
         done
@@ -301,5 +330,4 @@ function cmpcolors {
     translated_codes+=("$code")
   done
   shcolors "${translated_codes[@]}"
-  return
 }
