@@ -8,23 +8,39 @@ function declare_custom_widgets {
       echo -ne '\e[3 q\e[?12h'  # Blinking underline
     fi
   }
-  backward_char() {(( REGION_ACTIVE )) && zle deactivate-region; zle backward-char;}
+  backward_char() {(( REGION_ACTIVE )) && {(( CURSOR > MARK )) && { CURSOR=$MARK;}; zle deactivate-region; return;}; zle backward-char;}
   select_backward_char() {(( REGION_ACTIVE )) || zle set-mark-command; zle backward-char;}
 
-  forward_char() {(( REGION_ACTIVE )) && zle deactivate-region; zle forward-char;}
+  forward_char() {(( REGION_ACTIVE )) && {(( CURSOR < MARK )) && { CURSOR=$MARK;}; zle deactivate-region; return;}; zle forward-char;}
   select_forward_char() {(( REGION_ACTIVE )) || zle set-mark-command; zle forward-char;}
 
-  backward_word() {(( REGION_ACTIVE )) && zle deactivate-region; zle backward-word;}
+  backward_word() {(( REGION_ACTIVE )) && {(( CURSOR > MARK )) && { CURSOR=$MARK;}; zle deactivate-region; return;}; zle backward-word;}
   select_backward_word() {(( REGION_ACTIVE )) || zle set-mark-command; zle backward-word;}
 
-  forward_word() {(( REGION_ACTIVE )) && zle deactivate-region; zle forward-word;}
+  forward_word() {(( REGION_ACTIVE )) && {(( CURSOR < MARK )) && { CURSOR=$MARK;}; zle deactivate-region; return;}; zle forward-word;}
   select_forward_word() {(( REGION_ACTIVE )) || zle set-mark-command; zle forward-word;}
 
-  delete_char() { if (( REGION_ACTIVE )); then zle kill-region; else zle delete-char; fi }
-  delete_word() { if (( REGION_ACTIVE )); then zle kill-region; else zle delete-word; fi }
+  delete_char() {(( REGION_ACTIVE )) && zle kill-region; zle delete-char;}
+  delete_word() {(( REGION_ACTIVE )) && zle kill-region; zle delete-word;}
 
-  backward_delete_char() { if (( REGION_ACTIVE )); then zle kill-region; else zle backward-delete-char; fi }
-  backward_delete_word() { if (( REGION_ACTIVE )); then zle kill-region; else zle backward-delete-word; fi }
+  backward_delete_char() {(( REGION_ACTIVE )) && zle kill-region; zle backward-delete-char;}
+  backward_delete_word() {(( REGION_ACTIVE )) && zle kill-region; zle backward-delete-word;}
+
+  wrap_region() {
+    local open="$1"
+    local close="$2"
+    (( REGION_ACTIVE )) || { zle self-insert; return; }
+    (( MARK > CURSOR )) && { local -i ORIG=CURSOR; CURSOR=$MARK; MARK=$ORIG }
+    local text=${BUFFER[MARK+1,CURSOR]}
+    local wrapped=${open}${text}${close}
+    BUFFER="${BUFFER[1,MARK]}${wrapped}${BUFFER[CURSOR+1,-1]}"
+    (( CURSOR++, CURSOR++ ))
+  }
+  single_quote() { wrap_region "'" "'"; }
+  double_quote() { wrap_region '"' '"'; }
+  wrap_parens() { wrap_region '(' ')'; }
+  wrap_brackets() { wrap_region '[' ']'; }
+  wrap_braces() { wrap_region '{' '}'; }
 }
 declare_custom_widgets
 
@@ -46,6 +62,13 @@ function create_zle_custom_widgets {
   zle -N forward_word
   zle -N select_backward_word
   zle -N select_forward_word
+
+  zle -N single_quote
+  zle -N double_quote
+
+  zle -N wrap_parens
+  zle -N wrap_brackets
+  zle -N wrap_braces
 }
 create_zle_custom_widgets
 
@@ -71,8 +94,15 @@ function terminal_keybinder {
   bindkey '^[[1;2D' select_backward_char
 
   bindkey '^[[3~'   delete_char
-  bindkey '^[[1;3~' delete_word
+  bindkey '^[[3;5~' delete_word
   bindkey '^?'      backward_delete_char
   bindkey '^W'      backward_delete_word
+
+  bindkey "'"       single_quote
+  bindkey '"'       double_quote
+
+  bindkey '('       wrap_parens
+  bindkey '['       wrap_brackets
+  bindkey '{'       wrap_braces
 }
 terminal_keybinder
