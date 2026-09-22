@@ -45,6 +45,7 @@ clang_aliases+=(
 if [[ -z $mlir_aliases ]]; then
   typeset -A mlir_aliases
 fi
+
 mlir_aliases+=(
   [mlopt]="mlir-opt"
   [mlpdll]="mlir-pdll"
