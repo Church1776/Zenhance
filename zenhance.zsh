@@ -36,16 +36,18 @@ if [[ ! "$PWD" == "$ZENHANCE" ]]; then
   cd "$ZENHANCE"
 fi
 
-# Check for Zsh RC file. If no file exists copy repo .zshrc file to HOME. If ~/.zshrc doesn't source this file, append a line for sourcing.
+# Check for Zsh RC file. If no file exists copy zshrc.zsh file to HOME/.zshrc. If HOME/.zshrc doesn't source this file, append a line for sourcing.
 if [[ ! -s "$HOME/.zshrc" ]]; then
   cp "$ZENHANCE/zshrc.zsh" "$HOME/.zshrc";
 fi
-ZENFILE="$(grep 'zenhance.zsh' "$HOME/.zshrc" 2>/dev/null | sed 's/source //g' 2>/dev/null)"
-ZENFILE=${${ZENFILE//'~'/$HOME}//'"'/}
-if [[ ! -f $ZENFILE ]]; then
-  echo "source $ZENHANCE/zenhance.zsh" >> "$HOME/.zshrc"
+if [[ -r "$HOME/.zshrc" ]]; then
+  while IFS= read -r line; do
+    [[ $line == *zenhance.zsh* ]] || continue
+    line="${line//source /}"
+    [[ -f $line ]] && break
+  done < "$HOME/.zshrc"
+  [[ -f $line ]] || { print -r -- "source $ZENHANCE/zenhance.zsh" >> "$HOME/.zshrc"; }
 fi
-
 # Check for other packages needed to complete ZENHANCE setup.
 source "$ZENHANCE/dependancies/setup.zsh"
 source "$ZENHANCE/dependancies/validator.zsh"
