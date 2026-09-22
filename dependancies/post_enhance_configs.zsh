@@ -17,7 +17,7 @@ function zpostpkgsettings {
 	fi
 	if [[ -n $ZSH_HIGHLIGHT_STYLES ]]; then
 		ZSH_HIGHLIGHT_STYLES[reserved-word]='fg=blue'
-		ZSH_HIGHLIGHT_STYLES[dollar-double-quoted-argument]='fg=256'
+		ZSH_HIGHLIGHT_STYLES[dollar-double-quoted-argument]='fg=255'
 	fi
 	
 }
