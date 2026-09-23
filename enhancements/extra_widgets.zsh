@@ -30,11 +30,12 @@ function declare_custom_widgets {
     local open="$1"
     local close="$2"
     (( REGION_ACTIVE )) || { zle self-insert; return; }
-    (( MARK > CURSOR )) && { local -i ORIG=CURSOR; CURSOR=$MARK; MARK=$ORIG }
+    (( MARK > CURSOR )) && { local -i ORIG=CURSOR; CURSOR=$MARK; MARK=$ORIG; }
     local text=${BUFFER[MARK+1,CURSOR]}
     local wrapped=${open}${text}${close}
     BUFFER="${BUFFER[1,MARK]}${wrapped}${BUFFER[CURSOR+1,-1]}"
-    (( CURSOR++, CURSOR++ ))
+    (( CURSOR += 2 ))
+    [[ -n $ORIG ]] && { MARK=$CURSOR; CURSOR=$ORIG; }
   }
   single_quote() { wrap_region "'" "'"; }
   double_quote() { wrap_region '"' '"'; }
@@ -73,36 +74,59 @@ function create_zle_custom_widgets {
 create_zle_custom_widgets
 
 function terminal_widget_replacer {
-  bindkey '^[[2~' toggle_overwrite_mode
+  bindkey $'\e[2~' toggle_overwrite_mode
 }
 terminal_widget_replacer
 
 function terminal_keybinder {
-  bindkey '^[[1;5A' up-line-or-history
-  bindkey '^[[1;5B' down-line-or-history
-  bindkey '^[[5~'   beginning-of-history
-  bindkey '^[[6~'   end-of-history
-  bindkey '^[[H'    beginning-of-line
-  bindkey '^[[F'    end-of-line
-  bindkey '^[[C'    forward_char
-  bindkey '^[[1;2C' select_forward_char
-  bindkey '^[[D'    backward_char
-  bindkey '^[[1;6D' select_backward_word
-  bindkey '^[[1;5C' forward_word
-  bindkey '^[[1;6C' select_forward_word
-  bindkey '^[[1;5D' backward_word
-  bindkey '^[[1;2D' select_backward_char
+  bindkey $'\e[1;5A' up-line-or-history
+  bindkey $'\eO1;5A' up-line-or-history
+  bindkey $'\e[1;5B' down-line-or-history
+  bindkey $'\eO1;5B' down-line-or-history
+  bindkey $'\e[5~'   beginning-of-history
+  bindkey $'\eO5~'   beginning-of-history
+  bindkey $'\e[6~'   end-of-history
+  bindkey $'\eO6~'   end-of-history
+  bindkey $'\e[H'    beginning-of-line
+  bindkey $'\eOH'    beginning-of-line
+  bindkey $'\e[F'    end-of-line
+  bindkey $'\eOF'    end-of-line
+  bindkey $'\e[C'    forward_char
+  bindkey $'\eOC'    forward_char
+  bindkey $'\e[1;2C' select_forward_char
+  bindkey $'\eO1;2C' select_forward_char
+  bindkey $'\e[D'    backward_char
+  bindkey $'\eOD'    backward_char
+  bindkey $'\e[1;6D' select_backward_word
+  bindkey $'\eO1;6D' select_backward_word
+  bindkey $'\e[1;5C' forward_word
+  bindkey $'\eO1;5C' forward_word
+  bindkey $'\e[1;6C' select_forward_word
+  bindkey $'\eO1;6C' select_forward_word
+  bindkey $'\e[1;5D' backward_word
+  bindkey $'\eO1;5D' backward_word
+  bindkey $'\e[1;2D' select_backward_char
+  bindkey $'\eO1;2D' select_backward_char
+  
+  bindkey $'\e[3~'   delete_char
+  bindkey $'\eO3~'   delete_char
+  bindkey $'\e[3;5~' delete_word
+  bindkey $'\eO3;5~' delete_word
+  bindkey $'^?'      backward_delete_char
+  bindkey $'^W'      backward_delete_word
+  bindkey $'^H'      backward_delete_word
 
-  bindkey '^[[3~'   delete_char
-  bindkey '^[[3;5~' delete_word
-  bindkey '^?'      backward_delete_char
-  bindkey '^W'      backward_delete_word
+  bindkey $'\''      single_quote
+  bindkey $'"'       double_quote
 
-  bindkey "'"       single_quote
-  bindkey '"'       double_quote
+  bindkey $'('       wrap_parens
+  bindkey $'['       wrap_brackets
+  bindkey $'{'       wrap_braces
 
-  bindkey '('       wrap_parens
-  bindkey '['       wrap_brackets
-  bindkey '{'       wrap_braces
+  bindkey $'\e[^Z'   undo
+  bindkey $'\eO^Z'   undo
+  bindkey $'\e[1;6Z' redo
+  bindkey $'\eO1;6Z' redo
+  
 }
 terminal_keybinder
