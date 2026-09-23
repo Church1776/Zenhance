@@ -115,7 +115,6 @@ function terminal_keybinder {
   bindkey $'^?'      backward_delete_char
   bindkey $'^W'      backward_delete_word
   bindkey $'^H'      backward_delete_word
-
   bindkey $'\''      single_quote
   bindkey $'"'       double_quote
 
@@ -123,10 +122,9 @@ function terminal_keybinder {
   bindkey $'['       wrap_brackets
   bindkey $'{'       wrap_braces
 
-  bindkey $'\e[^Z'   undo
-  bindkey $'\eO^Z'   undo
+  bindkey $'^Z'      undo
+  bindkey $'^_'      redo
   bindkey $'\e[1;6Z' redo
   bindkey $'\eO1;6Z' redo
-  
 }
 terminal_keybinder
