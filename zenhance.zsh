@@ -59,7 +59,7 @@ case $usys in
 esac
 
 # Initialize shell configurations relative to script's location.
-configs=($(find "$ZENHANCE/enhancements/${(L)usys}" -type f -name '*.zsh'))
+configs=($(find "$ZENHANCE/enhancements/${(L)usys}" -maxdepth 1 -type f -name '*.zsh'))
 configs+=($(find "$ZENHANCE/enhancements" -maxdepth 1 -type f -name '*.zsh' ))
 if [[ -n $configs ]]; then
   for config in ${(@)configs[@]}; do

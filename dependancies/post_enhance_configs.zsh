@@ -8,6 +8,7 @@ function zpostpkgsettings {
 	if [[ -n $ZSH_AUTOSUGGEST_IGNORE_WIDGETS ]]; then
 		ZSH_AUTOSUGGEST_IGNORE_WIDGETS+=(
 			toggle_overwrite_mode
+			interactive_cd
 			backward_char
 			forward_char
 			backward_word

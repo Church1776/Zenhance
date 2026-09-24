@@ -4,14 +4,16 @@ function declare_custom_widgets {
   
 interactive_cd() {
   local root="$PWD"
-  local level=0
+  local origin="$root"
+  local origlevel="$origin"
+  local predisp=""
   local display=""
   local response action chosen query
   local -a response_lines
   local fzf_cmd=${FZF_BASE:-fzf}
 
   [[ $LBUFFER == cd || $LBUFFER == 'cd '* ]] || {
-    zle .expand-or-complete
+    zle expand-or-complete
     return
   }
 
@@ -22,17 +24,17 @@ interactive_cd() {
     if ! response=$(
       {
         print -r -- .
-        fd --type d --hidden --follow --max-depth 1
+        $fd_cmd --type d --hidden --follow --max-depth 1
       } |
         "$fzf_cmd" \
           --height=40% \
           --layout=reverse \
           --scheme=path \
           --prompt="${level}: ${display}> " \
-          --query="${query}" \
           +m \
           --bind='enter:become(printf "accept\n%s\n" {})' \
           --bind='right:become(printf "descend\n%s\n" {})' \
+          --bind='tab:become(printf "descend\n%s\n" {})' \
           --bind='left:become(printf parent)'
     ); then
       zle reset-prompt
@@ -45,33 +47,22 @@ interactive_cd() {
 
     case $action in
       descend)
+        [[ $chosen == . ]] && continue
         cd -- "$chosen" 2>/dev/null || continue
         root="$PWD"
-        (( --level ))
-        if (( $level > 0 )); then
-          display="${display%/*}"
-          display="${display%/*}"
-          display="${display:+$display/}"
-        elif (( $level == 0 )); then
-          display=''
-        else
-          display+="$chosen"
+        display+="$chosen"
+        if [[ ${display:A}/ == $origin* ]]; then
+          display="${display%${predisp:t}*}"
         fi
         ;;
       parent)
-        if [[ ! $root == / ]]; then
-          cd -- ".." 2>/dev/null || continue
-          root="$PWD"
-          (( ++level ))
-          if (( $level < 0 )); then
-            display="${display%/*}"
-            display="${display%/*}"
-            display="${display:+$display/}"
-          elif (( $level == 0 )); then
-            display=''
-          else
-            display+='../'
-          fi
+        [[ $root == / ]] && continue
+        cd -- ".." 2>/dev/null || continue
+        root="$PWD"
+        display+='../'
+        predisp="${display%../}"
+        if [[ ${predisp:t}/ != ../ ]]; then
+          display="${display%${predisp:t}*}"
         fi
         ;;
       accept)
@@ -204,6 +195,7 @@ function terminal_keybinder {
   bindkey $'^?'      backward_delete_char
   bindkey $'^W'      backward_delete_word
   bindkey $'^H'      backward_delete_word
+  bindkey $'^I'      interactive_cd
   bindkey $'\''      single_quote
   bindkey $'"'       double_quote
 
