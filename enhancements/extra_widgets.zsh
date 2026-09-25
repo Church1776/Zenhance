@@ -5,10 +5,10 @@ function declare_custom_widgets {
 interactive_cd() {
   local root="$PWD"
   local origin="$root"
-  local origlevel="$origin"
-  local predisp=""
+  local dirlevel="${origin:t}"
+  local level=0
   local display=""
-  local response action chosen query
+  local response action chosen query hinge
   local -a response_lines
   local fzf_cmd=${FZF_BASE:-fzf}
 
@@ -30,7 +30,7 @@ interactive_cd() {
           --height=40% \
           --layout=reverse \
           --scheme=path \
-          --prompt="${level}: ${display}> " \
+          --prompt="${level}:  ${dirlevel}:  ${origlevel}:  ${root}:  ${display}> " \
           +m \
           --bind='enter:become(printf "accept\n%s\n" {})' \
           --bind='right:become(printf "descend\n%s\n" {})' \
@@ -50,20 +50,19 @@ interactive_cd() {
         [[ $chosen == . ]] && continue
         cd -- "$chosen" 2>/dev/null || continue
         root="$PWD"
-        display+="$chosen"
-        if [[ ${display:A}/ == $origin* ]]; then
-          display="${display%${predisp:t}*}"
-        fi
+        dirlevel="${root:t}"
+        (( --level ))
+        [[ $forkedmode ]] && { display+="$chosen"; continue; }
+        (( level > 0 )) && { display="${display:h}"; display+="/"; continue; }
         ;;
       parent)
         [[ $root == / ]] && continue
         cd -- ".." 2>/dev/null || continue
         root="$PWD"
-        display+='../'
-        predisp="${display%../}"
-        if [[ ${predisp:t}/ != ../ ]]; then
-          display="${display%${predisp:t}*}"
-        fi
+        dirlevel="${root:t}"
+        (( ++level ))
+        [[ $forkedmode ]] && { [[ ! $root == "/" ]] && { display="${display:h}"; display+="/" }; continue; }
+        (( level > 0 )) && { display+="../"; continue; }
         ;;
       accept)
         [[ $chosen == . ]] && chosen=$root
