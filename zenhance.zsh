@@ -118,5 +118,11 @@ fi
 source "$ZENHANCE/dependancies/post_enhance_configs.zsh"
 
 READY_FOR_PRECMD=1
-source "$(find $ZENHANCE/enhancements/${(L)usys} -type f -name 'precmd.zsh')"
+if [[ $usys == "Windows" ]]; then
+  subsys="$(uname -o)"
+  source "$(find $ZENHANCE/enhancements/${(L)usys}/${(L)subsys} -type f -name 'precmd.zsh')"
+  unset subsys
+else
+  source "$(find "$ZENHANCE/enhancements/${(L)usys}" -maxdepth 1 -name '*.zsh')"
+fi
 unset READY_FOR_PRECMD
