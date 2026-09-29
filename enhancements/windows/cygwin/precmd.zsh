@@ -4,17 +4,21 @@ if [[ -z $READY_FOR_PRECMD || $READY_FOR_PRECMD != 1 ]]; then
   return
 fi
 
-unset cached_usystem
-# Check for Linux system and grab the distro name for the precmd function.
-NAME="$(cat /etc/os-release 2>/dev/null | sed -n 's/^NAME="\(.*\)"$/\1/p')"
-
-USYSTEM=$NAME
-UHOME=$HOME
+# Grab CYGROOT not set by User, grab the msys2 root directory path for the precmd function.
+if [[ -z $CYGROOT ]]; then
+  CYGROOT="$(cygpath -m /)"
+  CYGROOT="/${(L)CYGROOT//:/}"
+  CYGROOT="${CYGROOT%/}"
+fi
 
 # Check if inside a git repository and grab the root directory for the precmd function.
 vcs_root="$(git rev-parse --show-toplevel 2>/dev/null)"
 
-(( $+functions[preexec] )) && unset -f preexec
+unset cached_usystem
+USYSTEM='Cygwin'
+UHOME=$HOME
+
+
 function preexec {
   #echo "Preexec called with command: $1"
   if [[ $1 =~ "(^|[;|({])[[:space:]]*(git|fossil|svn)([[:space:]]*|[;|)}]|$)" ]]; then
@@ -22,11 +26,9 @@ function preexec {
     vcs_cmd_rerun=1
   fi
 }
-(( $+functions[precmd] )) && unset -f precmd
 function precmd {
   if [[ "$PWD" != "$cached_directory" ]]; then
-    #echo "Directory changed to: $PWD"
-    if [[ "$PWD/" == /mnt/[a-zA-Z]/* ]]; then
+    if [[ "$PWD/" == /[a-zA-Z]/* && "$PWD/" != "$CYGROOT/"* ]]; then
       UHOME=$WHOME
       path_color=$win32_path
       Z_color=$win32_Z
@@ -34,6 +36,8 @@ function precmd {
       UHOME=$HOME
       path_color=$unix_path
       Z_color=$unix_Z
+      PWD="${PWD#$CYGROOT}"
+      PWD=${PWD:-/}
     fi
     if [[ -e "$PWD/.git" && "$PWD/.git" != "$vcs_root/.git" || "$PWD/" != "$vcs_root/"* ]]; then
       #echo "Updating vcs_root..."
@@ -66,6 +70,7 @@ function precmd {
       fi
     fi
   fi
+  #if [[ -n $vcs_data ]]; then
   if [[ -n $vcs_data  && -n $vcs_cmd_rerun ]]; then
     vcs_cmd_rerun=""
     #echo "Reading vcs_data..."
