@@ -1,14 +1,15 @@
 #List of functions to create custom zle widgets and bind keys to them.
 function declare_custom_widgets {
   overwrite_mode() { zle overwrite-mode; [[ $ZLE_STATE == *"overwrite"* ]] && { echo -ne '\e[1 q\e[?12h'; return; }; echo -ne '\e[3 q\e[?12h'; }
-  
+
 interactive_cd() {
   local root="$PWD"
-  local origin="$root"
-  local dirlevel="${origin:t}"
   local level=0
   local display=""
-  local response action chosen query hinge
+  local oldpath="./"
+  local diverged=0
+  local origpathlvl=""
+  local response action chosen query
   local -a response_lines
   local fzf_cmd=${FZF_BASE:-fzf}
 
@@ -30,7 +31,7 @@ interactive_cd() {
           --height=40% \
           --layout=reverse \
           --scheme=path \
-          --prompt="${level}:  ${dirlevel}:  ${origlevel}:  ${root}:  ${display}> " \
+          --prompt="> $display" \
           +m \
           --bind='enter:become(printf "accept\n%s\n" {})' \
           --bind='right:become(printf "descend\n%s\n" {})' \
@@ -48,21 +49,33 @@ interactive_cd() {
     case $action in
       descend)
         [[ $chosen == . ]] && continue
+        oldpath="${root:t}/"
         cd -- "$chosen" 2>/dev/null || continue
         root="$PWD"
-        dirlevel="${root:t}"
         (( --level ))
-        [[ $forkedmode ]] && { display+="$chosen"; continue; }
-        (( level > 0 )) && { display="${display:h}"; display+="/"; continue; }
+        if [[ "$chosen" == "${origpathlvl%%/*}/" ]]; then
+          diverged=0
+          origpathlvl="${origpathlvl#*/}"
+          display="${display:h}/"
+          [[ $display == './' ]] && display=""
+        else
+          diverged=1
+          display+="$chosen"
+        fi
         ;;
       parent)
         [[ $root == / ]] && continue
+        oldpath="${root:t}/"
         cd -- ".." 2>/dev/null || continue
         root="$PWD"
-        dirlevel="${root:t}"
         (( ++level ))
-        [[ $forkedmode ]] && { [[ ! $root == "/" ]] && { display="${display:h}"; display+="/" }; continue; }
-        (( level > 0 )) && { display+="../"; continue; }
+        if [[ $diverged -eq 1 ]]; then
+          display="${display:h}/"
+          [[ $display == './' ]] && display=""
+        else
+          display+="../"
+          origpathlvl="${oldpath}${origpathlvl}"
+        fi
         ;;
       accept)
         [[ $chosen == . ]] && chosen=$root
@@ -76,10 +89,14 @@ interactive_cd() {
         return
         ;;
     esac
-
     query=
   done
 }
+
+# /home/brass/<locatedhere>.config/zsh/zenhance
+# /home/brass/.config/zsh/
+# /home/brass/.config/zsh/zenhance
+# /home/brass/.config/zsh/zenhance
 
   backward_char() {(( REGION_ACTIVE )) && {(( CURSOR > MARK )) && { CURSOR=$MARK;}; zle deactivate-region; return;}; zle backward-char;}
   select_backward_char() {(( REGION_ACTIVE )) || zle set-mark-command; zle backward-char;}
@@ -187,6 +204,7 @@ function terminal_keybinder {
   bindkey $'\e[1;2D' select_backward_char
   bindkey $'\eO1;2D' select_backward_char
   
+  bindkey $'\e[2~'   overwrite_mode
   bindkey $'\e[3~'   delete_char
   bindkey $'\eO3~'   delete_char
   bindkey $'\e[3;5~' delete_word
@@ -194,7 +212,8 @@ function terminal_keybinder {
   bindkey $'^?'      backward_delete_char
   bindkey $'^W'      backward_delete_word
   bindkey $'^H'      backward_delete_word
-  bindkey $'^I'      interactive_cd
+  bindkey $'\e[Z'    interactive_cd
+  bindkey $'\eOZ'    interactive_cd
   bindkey $'\''      single_quote
   bindkey $'"'       double_quote
 

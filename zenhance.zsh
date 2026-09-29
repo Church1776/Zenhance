@@ -1,7 +1,6 @@
 #!/usr/bin/zsh
 
 # Z Shell easy color modifiers for changing the terminal user prompt.
-usys=$(uname ${MSYSTEM:+'-o'}) # If MSYSTEM exists: Use -o flag to get value 'Msys' to correctly express the desired configuration.
 username=${username:-'208'}
 AT=${AT:-'214'}
 machine=${machine:-'228'}
@@ -35,7 +34,7 @@ if [[ ! "$PWD" == "$ZENHANCE" ]]; then
   ZINITDIR="$PWD"
   cd "$ZENHANCE"
 fi
-
+echo "USYS here: $usys"
 # Check for Zsh RC file. If no file exists copy zshrc.zsh file to HOME/.zshrc. If HOME/.zshrc doesn't source this file, append a line for sourcing.
 if [[ ! -s "$HOME/.zshrc" ]]; then
   cp "$ZENHANCE/zshrc.zsh" "$HOME/.zshrc";
@@ -48,28 +47,54 @@ if [[ -r "$HOME/.zshrc" ]]; then
   done < "$HOME/.zshrc"
   [[ -f $line ]] || { print -r -- "source $ZENHANCE/zenhance.zsh" >> "$HOME/.zshrc"; }
 fi
+
 # Check for other packages needed to complete ZENHANCE setup.
 source "$ZENHANCE/dependancies/setup.zsh"
 source "$ZENHANCE/dependancies/validator.zsh"
 
+echo "USYS here 2: $usys"
+
 # Configure Windows home directory. I'm Assuming the Windows environment is available to the User.
+# If Windows environment is not available, no errors are thrown. Nothing special needs to be done.
+# This is only to resolve the main environment folders. Distributions will be resolved within each folder separately.
+if (( $+commands[cygpath] )); then
+  usys="Windows"
+  echo "Detected Windows environment: $usys"
+else
+  source /etc/os-release
+  usys="$(ID)"
+  if [[ $usys =~ ^.*BSD$ ]]; then
+    usys="BSD"
+  fi
+fi
 case $usys in
-  Msys) WHOME=$(cygpath -u ${WINDIR%%\\*})/Users/$USER;;
+  Windows) WHOME=$(cygpath -u ${WINDIR%%\\*})/Users/$USER;;
   Linux) WHOME="$(find /mnt -maxdepth 2 -type d -name "Users" 2>/dev/null)"; WHOME="${WHOME:+$WHOME/$USER}";;
+  Darwin) WHOME="$(find /mnt -maxdepth 2 -type d -name "Users" 2>/dev/null)"; WHOME="${WHOME:+$WHOME/$USER}";;
+  BSD) WHOME="$(find /mnt -maxdepth 2 -type d -name "Users" 2>/dev/null)"; WHOME="${WHOME:+$WHOME/$USER}";;
 esac
 
 # Initialize shell configurations relative to script's location.
-configs=($(find "$ZENHANCE/enhancements/${(L)usys}" -maxdepth 1 -type f -name '*.zsh'))
-configs+=($(find "$ZENHANCE/enhancements" -maxdepth 1 -type f -name '*.zsh' ))
-if [[ -n $configs ]]; then
-  for config in ${(@)configs[@]}; do
-    [[ -f $config ]] && source $config
-  done
-fi
+echo "USYS here 3: $usys"
+function load_configs {
+  local configs=()
+  configs=($(find "$ZENHANCE/enhancements/${(L)usys}" -maxdepth 1 -type f -name '*.zsh'))
+  configs+=($(find "$ZENHANCE/enhancements" -maxdepth 1 -type f -name '*.zsh' ))
+  if [[ -n $configs ]]; then
+    for config in ${(@)configs[@]}; do
+      [[ -f $config ]] && source $config
+    done
+  fi
+}
+#load_configs
 
+# Translate Windows environment to Unix-System emulator used if on Windows.
+if [[ $usys == "Windows" ]]; then
+  usys=$(uname -o)
+fi
 # Display Shell User paths.
 function shuser {
-  echo "Home directories found for ${ink[$username]}$USER${ink[reset]}: ${ink[$unix_path]}$usys${ink[reset]}${WHOME:+|}${ink[$win32_path]}${WHOME:+Windows}${ink[reset]}."
+  echo "Home directories found for ${ink[$username]}$USER${ink[reset]}: ${ink[$unix_path]}${usys}${ink[reset]}${WHOME:+|}${ink[$win32_path]}${WHOME:+Windows}${ink[reset]}."
   echo -e "${ink[$system_env]}:[$usys]: ${ink[$unix_path]}${HOME%$USER}${ink[$username]}$USER${ink[reset]}"
   [[ -n $WHOME ]] || return
   echo -e "${ink[$system_env]}:[Windows]: ${ink[$win32_path]}${WHOME%$USER}${ink[$name]}$USER${ink[reset]}"
