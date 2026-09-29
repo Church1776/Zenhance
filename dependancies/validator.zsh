@@ -4,6 +4,7 @@
 function zloadpackage {
   local zname="$1"; shift
   local zdirs=("$@")
+  local zscript=""
 
   [[ -n $zname ]] || { echo "No package specified."; return 1; }
 
