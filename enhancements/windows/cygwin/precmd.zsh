@@ -6,9 +6,7 @@ fi
 
 # Grab CYGROOT not set by User, grab the msys2 root directory path for the precmd function.
 if [[ -z $CYGROOT ]]; then
-  CYGROOT="$(cygpath -m /)"
-  CYGROOT="/${(L)CYGROOT//:/}"
-  CYGROOT="${CYGROOT%/}"
+  CYGROOT="/cygdrive"
 fi
 
 # Check if inside a git repository and grab the root directory for the precmd function.
@@ -28,7 +26,7 @@ function preexec {
 }
 function precmd {
   if [[ "$PWD" != "$cached_directory" ]]; then
-    if [[ "$PWD/" == /[a-zA-Z]/* && "$PWD/" != "$CYGROOT/"* ]]; then
+    if [[ "$PWD/" == $CYGROOT/* ]]; then
       UHOME=$WHOME
       path_color=$win32_path
       Z_color=$win32_Z
