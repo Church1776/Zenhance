@@ -1,18 +1,18 @@
 #!/usr/bin/zsh
 
 # Z Shell easy color modifiers for changing the terminal user prompt.
-username=${username:-'208'}
-AT=${AT:-'214'}
-machine=${machine:-'228'}
-system_env=${system_env:-'62'}
-unix_path=${unix_path:-'35'}
-unix_Z=${unix_Z:-'84'}
-win32_path=${win32_path:-'33'}
-win32_Z=${win32_Z:-'51'}
-vcs_clr=${vcs_clr:-'245'}
-vcs_cl2=${vcs_cl2:-'250'}
-vcs_cl3=${vcs_cl3:-'reset'}
-colon=${colon:-'245'}
+zuser=${zuser:-'208'}
+zat=${zat:-'214'}
+zmach=${zmach:-'228'}
+zsys=${zsys:-'62'}
+znixpath=${znixpath:-'35'}
+znixZ=${znixZ:-'84'}
+zwinpath=${zwinpath:-'33'}
+zwinZ=${zwinZ:-'51'}
+zvcs=${zvcs:-'245'}
+zvcs2=${zvcs2:-'250'}
+zvcs3=${zvcs3:-'reset'}
+zcolon=${zcolon:-'245'}
 
 # Cursor styles (uncomment one)
 #printf '\e[0 q'         # Default (terminal-dependent)
@@ -93,10 +93,10 @@ function shuser {
   else
     unixuser="$(uname)"
   fi
-  echo "Home directories found for ${ink[$username]}$USER${ink[reset]}: ${ink[$unix_path]}${unixuser}${ink[reset]}${WHOME:+|}${ink[$win32_path]}${WHOME:+Windows}${ink[reset]}."
-  echo -e "${ink[$system_env]}:[$unixuser]: ${ink[$unix_path]}${HOME%$USER}${ink[$username]}$USER${ink[reset]}"
+  echo "Home directories found for ${ink[$zuser]}$USER${ink[reset]}: ${ink[$znixpath]}${unixuser}${ink[reset]}${WHOME:+|}${ink[$zwinpath]}${WHOME:+Windows}${ink[reset]}."
+  echo -e "${ink[$zsys]}:[$unixuser]: ${ink[$znixpath]}${HOME%$USER}${ink[$zuser]}$USER${ink[reset]}"
   [[ -n $WHOME ]] || return
-  echo -e "${ink[$system_env]}:[Windows]: ${ink[$win32_path]}${WHOME%$USER}${ink[$username]}$USER${ink[reset]}"
+  echo -e "${ink[$zsys]}:[Windows]: ${ink[$zwinpath]}${WHOME%$USER}${ink[$zuser]}$USER${ink[reset]}"
 }
 
 # Check if in a git repository and grab the root directory for the precmd function.
@@ -156,12 +156,12 @@ function setprefuncs {
     if [[ "$PWD" != "$cached_directory" ]]; then
       if [[ "$PWD/" == /[a-zA-Z]/* && "$PWD/" != "$MROOT/"* ]]; then
         UHOME=$WHOME
-        path_color=$win32_path
-        Z_color=$win32_Z
+        path_color=$zwinpath
+        Z_color=$zwinZ
       else
         UHOME=$HOME
-        path_color=$unix_path
-        Z_color=$unix_Z
+        path_color=$znixpath
+        Z_color=$znixZ
         PWD="${PWD#$MROOT}"
         PWD=${PWD:-/}
       fi
@@ -202,14 +202,14 @@ function setprefuncs {
       #echo "Reading vcs_data..."
       read -r vcs_branch < "$vcs_data/HEAD"
       if [[ $vcs_branch != ref:\ refs/heads/* ]]; then
-        vcs_branch="HEAD%{${ink[$vcs_cl2]}%}@%{${ink[$vcs_cl3]}%}${vcs_branch:0:$vcs_hash_length}%{${ink[$vcs_clr]}%}"
+        vcs_branch="HEAD%{${ink[$zvcs2]}%}@%{${ink[$zvcs3]}%}${vcs_branch:0:$vcs_hash_length}%{${ink[$zvcs]}%}"
       else
         vcs_branch="${vcs_branch#ref: refs/heads/}"
       fi
-      vcs_branch="%{${ink[$vcs_clr]}%}($vcs_branch)%{${ink[reset]}%} "
+      vcs_branch="%{${ink[$zvcs]}%}($vcs_branch)%{${ink[reset]}%} "
     fi
     cached_directory="$PWD"
-    PROMPT="%{${ink[$username]}%}%n%{${ink[$AT]}%}@%{${ink[$machine]}%}%m%{${ink[$colon]}%}:%{${ink[$system_env]}%}$USYSTEM%{${ink[$colon]}%}:%{${ink[$path_color]}%}${PWD/$UHOME/~}%{${ink[$Z_color]}%}%#%{${ink[reset]}%} ${vcs_branch}"
+    PROMPT="%{${ink[$zuser]}%}%n%{${ink[$zat]}%}@%{${ink[$zmach]}%}%m%{${ink[$zcolon]}%}:%{${ink[$zsys]}%}$USYSTEM%{${ink[$zcolon]}%}:%{${ink[$path_color]}%}${PWD/$UHOME/~}%{${ink[$Z_color]}%}%#%{${ink[reset]}%} ${vcs_branch}"
     return
   }
 }

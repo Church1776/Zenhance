@@ -1,6 +1,6 @@
 # Show Color of the given 256 ANSI code OR show all available colors to the terminal.
 #
-# % shcolors [optional codes]
+# % shcolors [optional] [codes]
 #
 # The following Show Colors 'shcolors' utility is the primary tool to display the colors codes within the Ink Dictionary.
 #
@@ -10,14 +10,18 @@
 #
 
 function shcolors {
-  local version="${ZENHANCE_TOOLKIT_VERSION:-0.0.1}"
-  local package_build="${ZENHANCE_PACKAGE_BUILD:-builtin-toolkit}"
+  local version="${ZE_TOOLKIT_VERSION:-0.0.1}"
+  local package_build="${ZE_PACKAGE_BUILD:-ze-toolkit}"
+  local installed_dir="${ZELOCATION:-unknown}"
+
   local utility_title="Show Colors"
   local util_cli_name="shcolors"
 
   local errmsg=''
-  local argcode=''
   local exitcode=''
+  local flagcode=''
+
+  local 
 
   local codes=("$@")
   local columns="${SHCOLORSCOLUMNS:-8}"
@@ -61,13 +65,13 @@ function shcolors {
   for code in "${codes[@]}"; do
     if [[ $code == '-'* ]]; then
       case $code in
-        -h|--help)argcode='help'; exitcode=0; break;;
-        -v|--version)argcode='version'; exitcode=0; break;;
-        *) argcode='error'; errmsg="Unknown option: $code"; exitcode=1; break;;
+        -h|--help)flagcode='help'; exitcode=0; break;;
+        -v|--version)flagcode='version'; exitcode=0; break;;
+        *) flagcode='error'; errmsg="Unknown option: $code"; exitcode=1; break;;
       esac
     fi
     if [[ ! $code =~ '^[0-9]+$' ]] && [[ $code != 'reset' ]] || (( code > 255 )); then
-      argcode='error'
+      flagcode='error'
       errmsg="Argument '$code' must be a 256 ANSI code."
       exitcode=1
       break
@@ -86,14 +90,14 @@ function shcolors {
     (( ++printed ))
   done
   (( needfeed == 1 )) && { printf '\n'; }
-  if [[ -n $argcode ]]; then
-    case $argcode in
+  if [[ -n $flagcode ]]; then
+    case $flagcode in
       error)
-        printf '%s\n' "$argcode: $errmsg"
+        printf '%s\n' "$flagcode: $errmsg"
         ;&
       help)
         printf '%s\n' \
-        "--- $utility_title Utility ---" \
+        "--- Zsh Enhance Toolkit $utility_title Utility ---" \
         "Usage: $util_cli_name [optional] [color] [codes]" \
         "Ex: $util_cli_name 0 1 2 3" \
         '' \
@@ -103,8 +107,8 @@ function shcolors {
         ;;
       version)
         printf '%s\n' \
-        "Zenhance $util_cli_name version $version ($package_build)" \
-        "InstalledDir: $ZENHANCE"
+        "Zsh Enhance Toolkit $util_cli_name version $version ($package_build)" \
+        "InstalledDir: $installed_dir"
         ;;
     esac
     return $exitcode

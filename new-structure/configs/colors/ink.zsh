@@ -1,4 +1,4 @@
-# The Ink Coloring Dictionary is the primary method for applying color to the terminal.
+# The Ink Color Dictionary is the primary method for applying color to the terminal.
 # All 256 ANSI color codes are provided from the get go so you don't have to make them yourself!
 #
 # A Dictionary was chosen instead of an array to guarentee that what number you pass to the dictionary

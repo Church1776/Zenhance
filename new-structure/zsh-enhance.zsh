@@ -18,22 +18,22 @@ colon=${colon:-'245'}
 # Configure completion to be case insensitive.
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
 
-ZENHANCE="${${(%):-%N}:A:h}"
+ZELOCATION="${${(%):-%N}:A:h}"
 ZINITDIR=""
 
 # Zenhance Toolkit Version set by the script itself.
-ZENHANCE_TOOLKIT_VERSION='0.1.0'
-ZENHANCE_PACKAGE_BUILD='zsh-enhance-toolkit'
+ZE_TOOLKIT_VERSION='0.1.0'
+ZE_PACKAGE_BUILD='ze-toolkit'
 
 # Move to Zenhance directory for handling dependancy paths.
-if [[ ! "$PWD" == "$ZENHANCE" ]]; then
+if [[ ! "$PWD" == "$ZELOCATION" ]]; then
   ZINITDIR="$PWD"
-  cd "$ZENHANCE"
+  cd "$ZELOCATION"
 fi
 
 # Check for Zsh RC file. If no file exists copy zshrc.zsh file to HOME/.zshrc. If HOME/.zshrc doesn't source this file, append a line for sourcing.
 if [[ ! -s "$HOME/.zshrc" ]]; then
-  cp "$ZENHANCE/zshrc.zsh" "$HOME/.zshrc";
+  cp "$ZELOCATION/zshrc.zsh" "$HOME/.zshrc";
 fi
 if [[ -r "$HOME/.zshrc" ]]; then
   while IFS= read -r line; do
@@ -41,12 +41,12 @@ if [[ -r "$HOME/.zshrc" ]]; then
     line="${line//source /}"
     [[ -f $line ]] && break
   done < "$HOME/.zshrc"
-  [[ -f $line ]] || { print -r -- "source $ZENHANCE/zenhance.zsh" >> "$HOME/.zshrc"; }
+  [[ -f $line ]] || { print -r -- "source $ZELOCATION/zenhance.zsh" >> "$HOME/.zshrc"; }
 fi
 
-# Check for other packages needed to complete ZENHANCE setup.
-source "$ZENHANCE/dependancies/setup.zsh"
-source "$ZENHANCE/dependancies/validator.zsh"
+# Check for other packages needed to complete ZELOCATION setup.
+source "$ZELOCATION/dependancies/setup.zsh"
+source "$ZELOCATION/dependancies/validator.zsh"
 
 # Configure Windows home directory. I'm Assuming the Windows environment is available to the User.
 # If Windows environment is not available, no errors are thrown. Nothing special needs to be done.
@@ -70,8 +70,8 @@ esac
 # Initialize shell configurations relative to script's location.
 function load_configs {
   local configs=()
-  configs=($(find "$ZENHANCE/enhancements/${(L)usys}" -maxdepth 1 -type f -name '*.zsh'))
-  configs+=($(find "$ZENHANCE/enhancements" -maxdepth 1 -type f -name '*.zsh' ))
+  configs=($(find "$ZELOCATION/enhancements/${(L)usys}" -maxdepth 1 -type f -name '*.zsh'))
+  configs+=($(find "$ZELOCATION/enhancements" -maxdepth 1 -type f -name '*.zsh' ))
   if [[ -n $configs ]]; then
     for config in ${(@)configs[@]}; do
       [[ -f $config ]] && source $config
@@ -111,14 +111,14 @@ if [[ -n "$ZINITDIR" ]]; then
 fi
 
 # Source post-enhance configurations.
-source "$ZENHANCE/dependancies/post_enhance_configs.zsh"
+source "$ZELOCATION/dependancies/post_enhance_configs.zsh"
 
 READY_FOR_PRECMD=1
 if [[ $usys == "Windows" ]]; then
   subsys="$(uname -o)"
-  source "$(find $ZENHANCE/enhancements/${(L)usys}/${(L)subsys} -type f -name 'precmd.zsh')"
+  source "$(find $ZELOCATION/enhancements/${(L)usys}/${(L)subsys} -type f -name 'precmd.zsh')"
   unset subsys
 else
-  source "$(find "$ZENHANCE/enhancements/${(L)usys}" -maxdepth 1 -name '*.zsh')"
+  source "$(find "$ZELOCATION/enhancements/${(L)usys}" -maxdepth 1 -name '*.zsh')"
 fi
 unset READY_FOR_PRECMD

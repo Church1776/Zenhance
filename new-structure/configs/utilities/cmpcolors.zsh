@@ -1,25 +1,28 @@
-# Compare 2 or more Colors of the given 256 ANSI code arguments passed in either a sequential or range format.
+# Compare 2 or more Colors of the given 256 ANSI code '0-255' arguments passed in either a sequential or range format.
 #
-# % cmpcolors [mandatory 2 or more color codes]
+# % cmpcolors [mandatory 2+] [color codes|code..range]
 #
 # The following Compare Colors 'cmpcolors' utility wraps Show Colors 'shcolors' to allow for checking ranges of colors.
 #
-# Utility will output the color of any given ansi 256 code or code range.
-# A range can be specified using a double dot notation: '..', e.g., 6..7, 15..10, N..reset,.
+# Utility will output the color of any given ansi 256 code or code range. As well as the following words: begin, end, all, & reset.
+# A range is specified using double dot notation '..'. A range will always print low..high output regardless if input is low..high|high..low.
+# Ex: begin..15, 6..7, 15..end, 0..reset
 # This utility has no formatting features. Formatting is handled by the 'shcolors' utility.
 #
 
 function cmpcolors {
-  local version="${ZENHANCE_TOOLKIT_VERSION:-0.0.1}"
-  local package_build="${ZENHANCE_PACKAGE_BUILD:-builtin-toolkit}"
+  local version="${ZE_TOOLKIT_VERSION:-0.0.1}"
+  local package_build="${ZE_PACKAGE_BUILD:-ze-toolkit}"
+  local installed_dir="${ZELOCATION:-unknown}"
+
   local utility_title="Compare Colors"
   local util_cli_name="cmpcolors"
 
-	local argcode=''
 	local errmsg=''
 	local exitcode=''
+	local flagcode=''
 
-  local codes=("${(@s.,.)@}")
+  local codes=("$@")
   local lcode rcode
   local translated_codes=()
 
@@ -27,32 +30,32 @@ function cmpcolors {
     for code in "${codes[@]}"; do
       if [[ $code == '-'* ]]; then
         case $code in
-          -h|--help)argcode='help'; exitcode=0; break;;
-          -v|--version)argcode='version'; exitcode=0; break;;
-          *) argcode='error'; errmsg="Unknown option: $code"; exitcode=1; break;;
+          -h|--help)flagcode='help'; exitcode=0; break;;
+          -v|--version)flagcode='version'; exitcode=0; break;;
+          *) flagcode='error'; errmsg="Unknown option: $code"; exitcode=1; break;;
         esac
       fi
       if [[ $code == *'..'* ]]; then
         lcode="${code%%..*}"
         rcode="${code##*..}"
+        if [[ ! $lcode =~ '^[0-9]+$' || $lcode -gt 255 ]]; then
+          flagcode='error'
+          errmsg="Invalid range: $code"
+          exitcode=1
+          break
+        fi
+        if [[ ! $rcode =~ '^[0-9]+$' || $rcode -gt 255 ]]; then
+          flagcode='error'
+          errmsg="Invalid range: $code"
+          exitcode=1
+          break
+        fi
         [[ $lcode == 'reset' ]] && lcode=256
         [[ $lcode == 'begin' ]] && lcode=0
         [[ $lcode == 'end' ]] && lcode=256
         [[ $rcode == 'reset' ]] && rcode=256
         [[ $rcode == 'begin' ]] && rcode=0
         [[ $rcode == 'end' ]] && rcode=256
-        if [[ ! $lcode =~ '^[0-9]+$' || $lcode -gt 256 ]]; then
-          argcode='error'
-          errmsg="Invalid range: $code"
-          exitcode=1
-          break
-        fi
-        if [[ ! $rcode =~ '^[0-9]+$' || $rcode -gt 256 ]]; then
-          argcode='error'
-          errmsg="Invalid range: $code"
-          exitcode=1
-          break
-        fi
         if (( lcode > rcode )); then
           code="$rcode..$lcode"
         else
@@ -60,7 +63,7 @@ function cmpcolors {
         fi
       else
         if [[ ! $code =~ '^[0-9]+$' ]] && [[ $code != 'reset' && $code != 'begin' && $code != 'end' ]]; then
-          argcode='error'
+          flagcode='error'
           errmsg="Argument '$code' must be a 256 ANSI code: 0..256|reset"
           exitcode=1
           break
@@ -71,7 +74,7 @@ function cmpcolors {
           code="0..256"
           ;&
         *'..'*)
-          for (( i = ${code%%..*}; i <= ${code##*..}; i++ )); do
+          for (( i = ${code%%..*}; i <= ${code##*..}; ++i )); do
             [[ "$i" -eq '256' ]] && translated_codes+=("reset") && continue
             translated_codes+=("$i")
           done
@@ -81,21 +84,20 @@ function cmpcolors {
       [[ "$code" == '256' ]] && code=reset
       translated_codes+=("$code")
     done
-    if [[ ${#translated_codes[@]} -lt 2 && -z $argcode ]]; then
-      argcode='error'
+    if [[ ${#translated_codes[@]} -lt 2 && -z $flagcode ]]; then
+      flagcode='error'
       errmsg="Must specify at least 2 color codes or a valid range to compare."
       exitcode=1
     fi
-  fi
-  if [[ -z $codes ]]; then
-    argcode='error'
+  else
+    flagcode='error'
     errmsg="No color codes specified. Must specify at least 2 color codes or a range to compare."
     exitcode=1
   fi
-  if [[ -n $argcode ]]; then
-    case $argcode in
+  if [[ -n $flagcode ]]; then
+    case $flagcode in
       error)
-        printf '%s\n' "$argcode: $errmsg"
+        printf '%s\n' "$flagcode: $errmsg"
         ;&
       help)
         printf '%s\n' \
@@ -109,8 +111,8 @@ function cmpcolors {
         ;;
       version)
         printf '%s\n' \
-        "Zenhance $util_cli_name version $version ($package_build)" \
-        "InstalledDir: $ZENHANCE"
+        "Zsh Enhance Toolkit $util_cli_name version $version ($package_build)" \
+        "InstalledDir: $installed_dir"
         ;;
     esac
     return $exitcode
