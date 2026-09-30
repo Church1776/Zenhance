@@ -11,6 +11,15 @@
 #
 
 function shcolors {
+  local version="${ZENHANCE_TOOLKIT_VERSION:-0.0.1}"
+  local package_build="${ZENHANCE_PACKAGE_BUILD:-'builtin-toolkit'}"
+  local utility_title="Show Colors"
+  local util_cli_name="shcolors"
+
+  local errmsg=''
+  local argcode=''
+  local exitcode=''
+
   local codes=("$@")
   local columns="${SHCOLORSCOLUMNS:-8}"
   local padsetting="${SHCOLORSPADDING:-2}"
@@ -18,14 +27,11 @@ function shcolors {
 
   local pads=''
   local reset=''
-  local errmsg=''
   local padding=''
-  local argcode=''
-  local exitcode=''
   local linefeed=''
   local needfeed=0
   if [[ -z $ink ]]; then
-    echo ":[info]: No colors found."
+    echo "info: No colors found."
     return 1
   fi
   if (( padsetting > 0 )); then
@@ -57,11 +63,12 @@ function shcolors {
     if [[ $code == '-'* ]]; then
       case $code in
         -h|--help)argcode='help'; exitcode=0; break;;
-        *) argcode='[error]'; errmsg="Unknown option: $code"; exitcode=1; break;;
+        -v|--version)argcode='version'; exitcode=0; break;;
+        *) argcode='error'; errmsg="Unknown option: $code"; exitcode=1; break;;
       esac
     fi
     if [[ ! $code =~ '^[0-9]+$' ]] && [[ $code != 'reset' ]] || (( code > 255 )); then
-      argcode='[error]'
+      argcode='error'
       errmsg="Argument '$code' must be a 256 ANSI code."
       exitcode=1
       break
@@ -82,14 +89,23 @@ function shcolors {
   (( needfeed == 1 )) && { printf '\n'; }
   if [[ -n $argcode ]]; then
     case $argcode in
-      '[error]')
-        echo "$argcode $errmsg"
+      error)
+        printf '%s\n' "$argcode: $errmsg"
         ;&
-      'help')
+      help)
         printf '%s\n' \
-        'Usage: shcolors [optional] [color] [codes]' \
-        'Ex: shcolors 1 2 3 4 5' \
-        'Ex: shcolors'
+        "--- $utility_title Utility ---" \
+        "Usage: $util_cli_name [optional] [color] [codes]" \
+        "Ex: $util_cli_name 0 1 2 3" \
+        '' \
+        'Options:' \
+        '  -h, --help     Show this help message' \
+        '  -v, --version  Show the version information' \
+        ;;
+      version)
+        printf '%s\n' \
+        "Zenhance $util_cli_name version $version ($package_build)" \
+        "InstalledDir: $ZENHANCE"
         ;;
     esac
     return $exitcode

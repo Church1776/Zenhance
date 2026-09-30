@@ -1,9 +1,16 @@
 function cmpcolors {
+  local version="${ZENHANCE_TOOLKIT_VERSION:-0.0.1}"
+  local package_build="${ZENHANCE_PACKAGE_BUILD:-'builtin-toolkit'}"
+  local utility_title="Compare Colors"
+  local util_cli_name="cmpcolors"
+
+	local argcode=''
+	local errmsg=''
+	local exitcode=''
+
   local codes=("${(@s.,.)@}")
   local translated_codes=()
-  local errmsg=''
-  local argcode=''
-  local exitcode=''
+
   if [[ -n $codes ]]; then
     for code in "${codes[@]}"; do
       if [[ $code == '-'* ]]; then
@@ -32,20 +39,29 @@ function cmpcolors {
     done
   fi
   if [[ ${#translated_codes[@]} -lt 2 || -z $codes ]]; then
-    argcode='[error]'
+    argcode='error'
     errmsg="Must specify at least 2 color codes or a range to compare."
     exitcode=1
   fi
   if [[ -n $argcode ]]; then
     case $argcode in
-      '[error]')
-        printf '%s\n' "$argcode $errmsg"
+      error)
+        printf '%s\n' "$argcode: $errmsg"
         ;&
-      'help')
+      help)
         printf '%s\n' \
-        'Usage: cmpcolors [optional] [color] [code..range]' \
-        'Ex: cmpcolors 1 2 3 4 5' \
-        'Ex: cmpcolors 24..30'
+        "--- $utility_title Utility ---" \
+        "Usage: $util_cli_name [optional] [color] [code..range]" \
+        "Ex: $util_cli_name 0 1 2 3..9" \
+        '' \
+        'Options:' \
+        '  -h, --help     Show this help message' \
+        '  -v, --version  Show the version information' \
+        ;;
+      version)
+        printf '%s\n' \
+        "Zenhance $util_cli_name version $version ($package_build)" \
+        "InstalledDir: $ZENHANCE"
         ;;
     esac
     return $exitcode

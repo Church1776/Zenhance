@@ -21,6 +21,10 @@ zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
 ZENHANCE="${${(%):-%N}:A:h}"
 ZINITDIR=""
 
+# Zenhance Toolkit Version set by the script itself.
+ZENHANCE_TOOLKIT_VERSION='0.1.0'
+ZENHANCE_PACKAGE_BUILD='zsh-enhance-toolkit'
+
 # Move to Zenhance directory for handling dependancy paths.
 if [[ ! "$PWD" == "$ZENHANCE" ]]; then
   ZINITDIR="$PWD"
