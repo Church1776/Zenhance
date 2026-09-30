@@ -3,6 +3,7 @@ function declare_custom_widgets {
   overwrite_mode() { zle overwrite-mode; [[ $ZLE_STATE == *"overwrite"* ]] && { echo -ne '\e[1 q\e[?12h'; return; }; echo -ne '\e[3 q\e[?12h'; }
 
 interactive_cd() {
+  local beginning_root="$PWD"
   local root="$PWD"
   local level=0
   local display=""
@@ -32,11 +33,13 @@ interactive_cd() {
           --layout=reverse \
           --scheme=path \
           --prompt="> $display" \
+          --expect=ctrl-c \
           +m \
           --bind='enter:become(printf "accept\n%s\n" {})' \
           --bind='right:become(printf "descend\n%s\n" {})' \
           --bind='tab:become(printf "descend\n%s\n" {})' \
-          --bind='left:become(printf parent)'
+          --bind='shift-tab:become(printf "parent\n%s\n" {})' \
+          --bind='left:become(printf parent)' \
     ); then
       zle reset-prompt
       return
@@ -80,8 +83,15 @@ interactive_cd() {
       accept)
         [[ $chosen == . ]] && chosen=$root
         [[ -n $chosen && -d $chosen ]] || return
-
         cd -- "$chosen" || return
+        BUFFER=
+        CURSOR=0
+        precmd
+        zle reset-prompt
+        return
+        ;;
+      ctrl-c)
+        cd -- "$beginning_root" 2>/dev/null
         BUFFER=
         CURSOR=0
         precmd

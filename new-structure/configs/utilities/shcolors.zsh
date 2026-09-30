@@ -2,17 +2,16 @@
 #
 # % shcolors [optional codes]
 #
-# The following Show Colors 'shcolors' function is the primary tool to display the colors codes within the Ink Dictionary.
+# The following Show Colors 'shcolors' utility is the primary tool to display the colors codes within the Ink Dictionary.
 #
-# The function will output the color of any given ansi 256 code input, or else print all available colors.
+# Utility will output the color of any given ansi 256 code input, or else print all available colors.
 # The formatting will default to a table of 8 columns, unless you decide to change it by assigning a value to SHCOLORSCOLUMNS.
-# The spacing is determined by the width of the code passed to the function plus SHCOLORSPADDING or a default padding of 2.
-#
+# The spacing is determined by the width of the code passed to the utility plus SHCOLORSPADDING or a default padding of 2.
 #
 
 function shcolors {
   local version="${ZENHANCE_TOOLKIT_VERSION:-0.0.1}"
-  local package_build="${ZENHANCE_PACKAGE_BUILD:-'builtin-toolkit'}"
+  local package_build="${ZENHANCE_PACKAGE_BUILD:-builtin-toolkit}"
   local utility_title="Show Colors"
   local util_cli_name="shcolors"
 

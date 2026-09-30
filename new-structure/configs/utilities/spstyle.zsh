@@ -1,6 +1,17 @@
+# Set the Pen Style for the terminal cursor.
+#
+# % spstyle [mandatory style]
+#
+# The following Set Pen Style 'spstyle' function allows easier configuration of the terminal cursor style.
+#
+# A cursor style must be passed as an argument to the function.
+# The function will output the escape sequence for the specified cursor style.
+# This utility has no formatting features.
+#
+
 function spstyle {
 	local version="${ZENHANCE_TOOLKIT_VERSION:-0.0.1}"
-	local package_build="${ZENHANCE_PACKAGE_BUILD:-'builtin-toolkit'}"
+	local package_build="${ZENHANCE_PACKAGE_BUILD:-builtin-toolkit}"
 	local utility_title="Set Pen Style"
 	local util_cli_name="spstyle"
 	
