@@ -3,7 +3,6 @@
 #
 # A Dictionary was chosen to guarentee that the styles are easy to select from.
 # You pass a style name, you get the corresponding ansi cursor code.
-#
 
 typeset -gA pen=(
     default     $'\e[0 q'
