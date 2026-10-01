@@ -10,9 +10,9 @@
 #
 
 function setcursor {
-	local ZEP=1
-	local version="${ZENHANCE_TOOLKIT_VERSION:-0.0.1}"
-	local package_build="${ZENHANCE_PACKAGE_BUILD:-builtin-toolkit}"
+	local ZE_PROCESS=1
+	local version="${ZE_TOOLKIT_VERSION:-0.0.1}"
+	local package_build="${ZE_PACKAGE_BUILD:-builtin-toolkit}"
 	local utility_title="Set Cursor"
 	local util_cli_name="setcursor"
 	
@@ -20,8 +20,11 @@ function setcursor {
 	local exitcode=''
 	local flagcode=''
 
-	local styles=("$@")
 	local valid_styles=(${(k)pen})
+	local installed_dir="${ZE_LOCATION:-unknown}"
+	local args=("$@")
+
+	local styles=("${args[@]}")
 
 	if [[ -n "$styles" ]]; then
 		for style in "${styles[@]}"; do
@@ -69,7 +72,7 @@ function setcursor {
 			version)
 				printf '%s\n' \
 				"Zenhance $util_cli_name version $version ($package_build)" \
-				"InstalledDir: $ZENHANCE"
+				"InstalledDir: $installed_dir"
 				;;
 		esac
 		return "$exitcode"

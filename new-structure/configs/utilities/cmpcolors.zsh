@@ -13,7 +13,7 @@
 function cmpcolors {
   local version="${ZE_TOOLKIT_VERSION:-0.0.1}"
   local package_build="${ZE_PACKAGE_BUILD:-ze-toolkit}"
-  local installed_dir="${ZELOCATION:-unknown}"
+  local installed_dir="${ZE_LOCATION:-unknown}"
 
   local utility_title="Compare Colors"
   local util_cli_name="cmpcolors"
@@ -22,7 +22,9 @@ function cmpcolors {
 	local exitcode=''
 	local flagcode=''
 
-  local codes=("$@")
+	local args=("$@")
+
+  local codes=("${args[@]}")
   local lcode rcode
   local translated_codes=()
 

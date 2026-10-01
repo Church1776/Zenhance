@@ -12,7 +12,7 @@
 function shcolors {
   local version="${ZE_TOOLKIT_VERSION:-0.0.1}"
   local package_build="${ZE_PACKAGE_BUILD:-ze-toolkit}"
-  local installed_dir="${ZELOCATION:-unknown}"
+  local installed_dir="${ZE_LOCATION:-unknown}"
 
   local utility_title="Show Colors"
   local util_cli_name="shcolors"
@@ -21,18 +21,16 @@ function shcolors {
   local exitcode=''
   local flagcode=''
 
-  local 
+  local args=("$@")
 
-  local codes=("$@")
+  local codes=("${args[@]}")
   local columns="${SHCOLORSCOLUMNS:-8}"
   local padsetting="${SHCOLORSPADDING:-2}"
   local printed=0
-
-  local pads=''
-  local reset=''
-  local padding=''
-  local linefeed=''
   local needfeed=0
+
+  local pads reset padding linefeed
+
   if [[ -z $ink ]]; then
     echo "info: No colors found."
     return 1
