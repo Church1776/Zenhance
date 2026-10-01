@@ -3,10 +3,9 @@
 # [Not for direct interaction. Will return an error if used from the cli.]
 #
 # The following CLI Interpreter subprocess only interprets options passed with the format: -o|--option
-#
 
 function cli_interpreter {
-  [[ -n $ZEP_ACTIVE ]] || { echo "This process can only be called while a Zsh-Enhance-Processor is running."; return;}
+  [[ -n $ZIT_UTILITY ]] || { echo "$0: zit utility must be running to call this process."; return;}
 
   local args=("$@")
   local longopt=0
