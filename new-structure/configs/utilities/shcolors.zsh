@@ -7,12 +7,12 @@
 # Utility will output the color of any given ansi 256 code input, or else print all available colors.
 # The formatting will default to a table of 8 columns, unless you decide to change it by assigning a value to SHCOLORSCOLUMNS.
 # The spacing is determined by the width of the code passed to the utility plus SHCOLORSPADDING or a default padding of 2.
-#
 
 function shcolors {
-  local version="${ZE_TOOLKIT_VERSION:-0.0.1}"
-  local package_build="${ZE_PACKAGE_BUILD:-ze-toolkit}"
-  local installed_dir="${ZE_LOCATION:-unknown}"
+	local ZIT_UTILITY=1
+  local version="${ZIT_TOOLKIT_VERSION:-0.0.1}"
+  local package_build="${ZIT_PACKAGE_BUILD:-ze-toolkit}"
+  local installed_dir="${ZIT_LOCATION:-unknown}"
 
   local utility_title="Show Colors"
   local util_cli_name="shcolors"

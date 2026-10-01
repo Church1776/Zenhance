@@ -7,12 +7,13 @@
 # A cursor style must be passed as an argument to the function.
 # The function will output the escape sequence for the specified cursor style.
 # This utility has no formatting features.
-#
 
 function setcursor {
-	local ZE_PROCESS=1
-	local version="${ZE_TOOLKIT_VERSION:-0.0.1}"
-	local package_build="${ZE_PACKAGE_BUILD:-builtin-toolkit}"
+	local ZIT_UTILITY=1
+	local version="${ZIT_TOOLKIT_VERSION:-0.0.1}"
+	local package_build="${ZIT_PACKAGE_BUILD:-builtin-toolkit}"
+	local installed_dir="${ZIT_LOCATION:-unknown}"
+
 	local utility_title="Set Cursor"
 	local util_cli_name="setcursor"
 	
@@ -21,7 +22,6 @@ function setcursor {
 	local flagcode=''
 
 	local valid_styles=(${(k)pen})
-	local installed_dir="${ZE_LOCATION:-unknown}"
 	local args=("$@")
 
 	local styles=("${args[@]}")
