@@ -7,8 +7,31 @@ function zpostpkgsettings {
 	fi
 	if [[ -n $ZSH_AUTOSUGGEST_IGNORE_WIDGETS ]]; then
 		ZSH_AUTOSUGGEST_IGNORE_WIDGETS+=(
+#			overwrite_mode
+#			interactive_cd
+#			backward_char
+#			forward_char
+#			backward_word
+#			forward_word
+#			select_backward_char
+#			select_forward_char
+#			select_backward_word
+#			select_forward_word
+#			delete_char
+#			delete_word
+#			backward_delete_char
+#			backward_delete_word
+#			single_quote
+#			double_quote
+#			wrap_parens
+#			wrap_brackets
+#			wrap_braces
+
 			overwrite_mode
-			interactive_cd
+			delete_char
+			delete_word
+			backward_delete_char
+			backward_delete_word
 			backward_char
 			forward_char
 			backward_word
@@ -17,15 +40,17 @@ function zpostpkgsettings {
 			select_forward_char
 			select_backward_word
 			select_forward_word
-			delete_char
-			delete_word
-			backward_delete_char
-			backward_delete_word
-			single_quote
-			double_quote
-			wrap_parens
-			wrap_brackets
-			wrap_braces
+#			single_quote
+#			double_quote
+#			wrap_region
+#			open_parens
+#			open_brackets
+#			open_braces
+#			close_parens
+#			close_brackets
+#			close_braces
+			show_keys
+			interactive_cd
 		)
 	fi
 	if [[ -n $ZSH_HIGHLIGHT_STYLES ]]; then

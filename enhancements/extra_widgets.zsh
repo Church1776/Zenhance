@@ -32,7 +32,7 @@ interactive_cd() {
           --height=40% \
           --layout=reverse \
           --scheme=path \
-          --prompt="> $display" \
+          --prompt="Level:$level  Diverged:$diverged  OrigPathLvl:$origpathlvl  > $display" \
           --expect=ctrl-c \
           +m \
           --bind='enter:become(printf "accept\n%s\n" {})' \
@@ -74,7 +74,7 @@ interactive_cd() {
         (( ++level ))
         if [[ $diverged -eq 1 ]]; then
           display="${display:h}/"
-          [[ $display == './' ]] && display=""
+          [[ $display == './' ]] && { display=""; diverged=0; }
         else
           display+="../"
           origpathlvl="${oldpath}${origpathlvl}"
@@ -123,27 +123,105 @@ interactive_cd() {
   delete_char() {(( REGION_ACTIVE )) && zle kill-region; zle delete-char;}
   delete_word() {(( REGION_ACTIVE )) && zle kill-region; zle delete-word;}
 
-  backward_delete_char() {(( REGION_ACTIVE )) && { zle kill-region; return; }; zle backward-delete-char;}
+  backward_delete_char() {
+    (( REGION_ACTIVE )) && { zle kill-region; return; }
+    local lchar rchar qchar
+    case $LBUFFER[-1] in
+      '(') lchar='('; rchar=')';;
+      '{') lchar='{'; rchar='}';;
+      '[') lchar='['; rchar=']';;
+      "'") lchar="'"; rchar="'";;
+      '"') lchar='"'; rchar='"';;
+    esac
+    if [[ $lchar == ${LBUFFER[-1]} && $rchar == ${RBUFFER[1]} ]]; then
+      LBUFFER=${LBUFFER[1,-2]}
+      RBUFFER=${RBUFFER[2,-1]}
+      return
+    fi
+    zle backward-delete-char;
+  }
   backward_delete_word() {(( REGION_ACTIVE )) && { zle kill-region; return; }; zle backward-delete-word;}
 
   wrap_region() {
-    local open="$1"
-    local close="$2"
-    (( REGION_ACTIVE )) || { zle self-insert; return; }
+    [[ -n ZIT_WIDGET || -n ZIT_CUSTOM_WIDGET ]] || return
+    (( REGION_ACTIVE )) || return
+    local opchar="$1"
+    local clchar="$2"
     (( MARK > CURSOR )) && { local -i ORIG=CURSOR; CURSOR=$MARK; MARK=$ORIG; }
     local text=${BUFFER[MARK+1,CURSOR]}
-    local wrapped=${open}${text}${close}
+    local wrapped=${opchar}${text}${clchar}
     BUFFER="${BUFFER[1,MARK]}${wrapped}${BUFFER[CURSOR+1,-1]}"
     (( CURSOR += 2 ))
     [[ -n $ORIG ]] && { MARK=$CURSOR; CURSOR=$ORIG; }
+    zle reset-prompt
   }
-  single_quote() { wrap_region "'" "'"; }
-  double_quote() { wrap_region '"' '"'; }
-  wrap_parens() { wrap_region '(' ')'; }
-  wrap_brackets() { wrap_region '[' ']'; }
-  wrap_braces() { wrap_region '{' '}'; }
+  open_region() {
+    local ZIT_WIDGET=1
+    local opener="$1"
+    local closer="$2"
+    if (( REGION_ACTIVE )); then
+      wrap_region "$opener" "$closer"
+      return
+    elif [[ $RBUFFER[1] != $opener ]]; then
+      RBUFFER=${closer}${RBUFFER}
+    fi
+    LBUFFER+=${opener}
+  }
+  close_region() {
+    local ZIT_WIDGET=1
+    local opener="$1"
+    local closer="$2"
+    if (( REGION_ACTIVE )); then
+      wrap_region "$opener" "$closer"
+      return
+    fi
+    if [[ $RBUFFER[1] != $closer ]]; then
+      RBUFFER=${closer}${RBUFFER}
+    fi
+    (( CURSOR++ ))
+  }
+  quote_region() {
+    local ZIT_WIDGET=1
+    local quoter="$1"
+    (( REGION_ACTIVE )) || {
+      local text=$LBUFFER
+      local char next
+      local state=unquoted
+      local -i i
 
-  show_keys() { zle -M "received: ${(q-)KEYS}"; }
+      for (( i = 1; i <= ${#text}; ++i )); do
+        char=${text[i]}
+        case $state:$char in
+          unquoted:\\)(( ++i ));;
+          unquoted:\')state=single_quoted;;
+          unquoted:\")state=double_quoted;;
+          single_quoted:\')state=unquoted;;
+          double_quoted:\")state=unquoted;;
+          double_quoted:\\)
+            next=${text[i + 1]}
+            [[ $next == [\$\\\"\`$'\n'] ]] && (( ++i ))
+            ;;
+        esac
+      done
+
+      case $state in
+        unquoted) open_region "$quoter" "$quoter";;
+        single_quoted) [[ $quoter == "'" ]] || { close_region "$quoter" "$quoter"; return; }; open_region "$quoter" "$quoter";;
+        double_quoted) [[ $quoter == '"' ]] || { close_region "$quoter" "$quoter"; return; }; open_region "$quoter" "$quoter";;
+      esac
+    }
+    wrap_region "$quoter" "$quoter"
+  }
+  single_quote() { quote_region "'"; }
+  double_quote() { quote_region '"'; }
+  open_parens() { open_region '(' ')'; }
+  open_brackets() { open_region '[' ']'; }
+  open_braces() { open_region '{' '}'; }
+  close_parens() { close_region '(' ')'; }
+  close_brackets() { close_region '[' ']'; }
+  close_braces() { close_region '{' '}'; }
+  
+  show_keys() { zle -M "received: ${(q-)KEYS}"; ; zle reset-prompt; }
 }
 declare_custom_widgets
 
@@ -169,9 +247,13 @@ function create_zle_custom_widgets {
   zle -N single_quote
   zle -N double_quote
 
-  zle -N wrap_parens
-  zle -N wrap_brackets
-  zle -N wrap_braces
+  zle -N wrap_region
+  zle -N open_parens
+  zle -N open_brackets
+  zle -N open_braces
+  zle -N close_parens
+  zle -N close_brackets
+  zle -N close_braces
 
   zle -N show_keys
 
@@ -219,20 +301,24 @@ function terminal_keybinder {
   bindkey $'\eO3~'   delete_char
   bindkey $'\e[3;5~' delete_word
   bindkey $'\eO3;5~' delete_word
-  bindkey $'^?'      backward_delete_char
-  bindkey $'^W'      backward_delete_word
-  bindkey $'^H'      backward_delete_word
+  bindkey '^?'      backward_delete_char
+  bindkey '^W'      backward_delete_word
+  bindkey '^H'      backward_delete_word
   bindkey $'\e[Z'    interactive_cd
   bindkey $'\eOZ'    interactive_cd
-  bindkey $'\''      single_quote
-  bindkey $'"'       double_quote
+  bindkey "'"       single_quote
+  bindkey '"'       double_quote
 
-  bindkey $'('       wrap_parens
-  bindkey $'['       wrap_brackets
-  bindkey $'{'       wrap_braces
+  bindkey '('       open_parens
+  bindkey '['       open_brackets
+  bindkey '{'       open_braces
+  bindkey ')'       close_parens
+  bindkey ']'       close_brackets
+  bindkey '}'       close_braces
 
-  bindkey $'^Z'      undo
-  bindkey $'^_'      redo
+  bindkey '^X'      describe-key-briefly
+  bindkey '^Z'      undo
+  bindkey '^_'      redo
   bindkey $'\e[1;6Z' redo
   bindkey $'\eO1;6Z' redo
 }
