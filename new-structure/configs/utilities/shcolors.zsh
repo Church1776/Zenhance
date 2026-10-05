@@ -11,7 +11,7 @@
 function shcolors {
 	local ZIT_UTILITY=1
   local version="${ZIT_TOOLKIT_VERSION:-0.0.1}"
-  local package_build="${ZIT_PACKAGE_BUILD:-ze-toolkit}"
+  local package_build="${ZIT_PACKAGE_BUILD:-zit-base}"
   local installed_dir="${ZIT_LOCATION:-unknown}"
 
   local utility_title="Show Colors"

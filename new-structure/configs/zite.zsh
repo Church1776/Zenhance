@@ -9,7 +9,7 @@
 # The spacing is determined by the width of the code passed to the utility plus SHCOLORSPADDING or a default padding of 2.
 
 function zite {
-  local args=("$@")
   [[ -z ${ZIT_UTILITY} ]] && echo "zite: Must be called from a zit utility."
 
+  local args=("$@")
 }
