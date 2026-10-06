@@ -60,7 +60,7 @@ function vscodepath {
   fi
   PATH+=":$vscode_bin_path"
   export PATH="$PATH"
-  alias code="code --user-data-dir $HOME/.config/code/user --profile Msys2"
+  #alias code="code --user-data-dir $HOME/.config/code/user --profile Msys2"
 }
 vscodepath
 unset -f vscodepath

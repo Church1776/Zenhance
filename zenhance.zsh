@@ -34,7 +34,6 @@ if [[ ! "$PWD" == "$ZIT_LOCATION" ]]; then
   ZIT_INITDIR="$PWD"
   cd "$ZIT_LOCATION"
 fi
-
 # Check for Zsh RC file. If no file exists copy zshrc.zsh file to HOME/.zshrc. If HOME/.zshrc doesn't source this file, append a line for sourcing.
 if [[ ! -s "$HOME/.zshrc" ]]; then
   cp "$ZIT_LOCATION/zshrc.zsh" "$HOME/.zshrc";
@@ -43,7 +42,7 @@ if [[ -r "$HOME/.zshrc" ]]; then
   while IFS= read -r line; do
     [[ $line == *zenhance.zsh* ]] || continue
     line="${line//source /}"
-    [[ -f $line ]] && break
+    [[ -f $line ]] && { break; }
   done < "$HOME/.zshrc"
   [[ -f $line ]] || { print -r -- "source $ZIT_LOCATION/zenhance.zsh" >> "$HOME/.zshrc"; }
 fi
@@ -78,6 +77,7 @@ function load_configs {
   configs+=($(find "$ZIT_LOCATION/enhancements" -maxdepth 1 -type f -name '*.zsh' ))
   if [[ -n $configs ]]; then
     for config in ${(@)configs[@]}; do
+      echo "Loading config: $config"
       [[ -f $config ]] && source $config
     done
   fi
@@ -120,10 +120,10 @@ source "$ZIT_LOCATION/dependancies/post_enhance_configs.zsh"
 READY_FOR_PRECMD=1
 if [[ $usys == "Windows" ]]; then
   subsys="$(uname -o)"
-  source "$(find $ZIT_LOCATION/enhancements/${(L)usys}/${(L)subsys} -type f -name 'precmd.zsh')"
+  #source "$(find $ZIT_LOCATION/enhancements/${(L)usys}/${(L)subsys} -type f -name 'precmd.zsh')"
   unset subsys
 else
-  source "$(find "$ZIT_LOCATION/enhancements/${(L)usys}" -maxdepth 1 -name '*.zsh')"
+  #source "$(find "$ZIT_LOCATION/enhancements/${(L)usys}" -maxdepth 1 -name '*.zsh')"
 fi
 unset READY_FOR_PRECMD
 

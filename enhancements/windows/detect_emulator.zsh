@@ -5,8 +5,8 @@ else
   emulator="$(uname -o)"
   emulator="${(L)emulator}"
 fi
-
-subconfigs=($(find "$ZENHANCE/enhancements/windows/${(L)usys}" -maxdepth 1 -type f -name '*.zsh'))
+echo "Emulator detected: $emulator"
+subconfigs=($(find "$ZIT_LOCATION/enhancements/windows/${(L)emulator}" -maxdepth 1 -type f -name '*.zsh'))
 if [[ -n $subconfigs ]]; then
   for subconfig in ${(@)subconfigs[@]}; do
     [[ -f $subconfig ]] && source $subconfig
