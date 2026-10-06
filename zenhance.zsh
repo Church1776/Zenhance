@@ -77,7 +77,6 @@ function load_configs {
   configs+=($(find "$ZIT_LOCATION/enhancements" -maxdepth 1 -type f -name '*.zsh' ))
   if [[ -n $configs ]]; then
     for config in ${(@)configs[@]}; do
-      echo "Loading config: $config"
       [[ -f $config ]] && source $config
     done
   fi
@@ -128,8 +127,16 @@ fi
 unset READY_FOR_PRECMD
 
 function setprefuncs {
-  source /etc/os-release
-  USYSTEM=$NAME
+  NAME="${NAME:-}"
+  if [[ -z "$NAME" ]]; then
+    if [[ -e /etc/os-release ]]; then
+      NAME=$(cat /etc/os-release | sed -n 's/^ID=\(.*\)$/\1/p')
+    elif [[ $usys == "Windows" ]]; then
+      NAME=$(uname -o)
+    else
+      NAME="$(uname)"
+    fi
+  fi
   zit_vcs_root="$(git rev-parse --show-toplevel 2>/dev/null)"
   (( $+functions[preexec] )) && unset -f preexec
   function preexec {

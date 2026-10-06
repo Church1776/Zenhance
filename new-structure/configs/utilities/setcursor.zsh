@@ -21,7 +21,7 @@ function setcursor {
 	local exitcode=''
 	local flagcode=''
 
-	local valid_styles=(${(k)pen})
+	local valid_styles=(${(ok)pen})
 	local args=("$@")
 
 	local styles=("${args[@]}")
@@ -67,7 +67,7 @@ function setcursor {
 				'  -v, --version  Show the version information' \
 				'' \
 				'Valid Styles:' \
-				"  ${valid_styles[*]}"
+				"  ${(ok)valid_styles[*]}"
 				;;
 			version)
 				printf '%s\n' \
