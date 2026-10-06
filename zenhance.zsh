@@ -127,7 +127,8 @@ fi
 unset READY_FOR_PRECMD
 
 function setprefuncs {
-  NAME="${NAME:+$NAME}"
+  NAME="${TRUENAME:+$TRUENAME}"
+  unset TRUENAME
   if [[ -z "$NAME" ]]; then
     if [[ -e /etc/os-release ]]; then
       NAME=$(cat /etc/os-release | sed -n 's/^ID=\(.*\)$/\1/p')
