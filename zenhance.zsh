@@ -149,7 +149,7 @@ function setprefuncs {
   }
   (( $+functions[precmd] )) && unset -f precmd
   function precmd {
-    if [[ "$USYSTEM" != "$zit_cached_usystem" ]]; then
+    if [[ "$USYSTEM" != "$zit_cached_usystem" || -z "$USYSTEM" ]]; then
         case $MSYSTEM in
           CLANG64)NAME='Clang64';;
           CLANGARM64)NAME='ClangArm64';;
