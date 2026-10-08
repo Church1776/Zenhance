@@ -26,7 +26,11 @@ printf '\e[3 q'  # Blinking underline
 # Configure completion to be case insensitive.
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
 
-ZIT_LOCATION="${${(%):-%N}:A:h}"
+ZIT_FILENAME="${${(%):-%N}:A}"
+ZIT_LOCATION="${ZIT_FILENAME:h}"
+ZIT_DEPENDANCIES="$ZIT_LOCATION/dependancies"
+ZIT_CONFIGS="$ZIT_LOCATION/enhancements"
+ZIT_USERHOME="${ZDOTDIR:-$HOME}"
 ZIT_INITDIR=""
 
 # Move to Zenhance directory for handling dependancy paths.
@@ -35,16 +39,22 @@ if [[ ! "$PWD" == "$ZIT_LOCATION" ]]; then
   cd "$ZIT_LOCATION"
 fi
 # Check for Zsh RC file. If no file exists copy zshrc.zsh file to HOME/.zshrc. If HOME/.zshrc doesn't source this file, append a line for sourcing.
-if [[ ! -s "$HOME/.zshrc" ]]; then
-  cp "$ZIT_LOCATION/zshrc.zsh" "$HOME/.zshrc";
-fi
-if [[ -r "$HOME/.zshrc" ]]; then
+if [[ ! -s "${ZIT_USERHOME}/.zshrc" ]]; then
+  cp "$ZIT_LOCATION/zshrc.zsh" "${ZIT_USERHOME}/.zshrc";
+else
   while IFS= read -r line; do
-    [[ $line == *zenhance.zsh* ]] || continue
+    [[ $line == *$ZIT_FILENAME* ]] && break
+  done < "${ZIT_USERHOME}/.zshrc"
+fi
+if [[ -r "${ZIT_USERHOME}/.zshrc" ]]; then
+  while IFS= read -r line; do
+    [[ $line == *$ZIT_FILENAME* ]] || continue
     line="${line//source /}"
     [[ -f $line ]] && { break; }
-  done < "$HOME/.zshrc"
-  [[ -f $line ]] || { print -r -- "source $ZIT_LOCATION/zenhance.zsh" >> "$HOME/.zshrc"; }
+  done < "${ZIT_USERHOME}/.zshrc"
+  zit_file_line="${ZIT_FILENAME//$HOME/}"
+  zit_file_line='${ZDOTDIR:-$HOME}'"$zit_file_line"
+  [[ -f $line ]] || { printf '\n%s\n' "source $zit_file_line" >> "${ZIT_USERHOME}/.zshrc"; }
 fi
 
 # Check for other packages needed to complete ZIT_LOCATION setup.
@@ -57,7 +67,6 @@ source "$ZIT_LOCATION/dependancies/validator.zsh"
 if (( $+commands[cygpath] )); then
   usys="Windows"
 else
-  source /etc/os-release
   usys="$(uname)"
   if [[ $usys =~ ^.*BSD$ ]]; then
     usys="BSD"
@@ -125,6 +134,9 @@ else
   #source "$(find "$ZIT_LOCATION/enhancements/${(L)usys}" -maxdepth 1 -name '*.zsh')"
 fi
 unset READY_FOR_PRECMD
+unset ZIT_DEPENDANCIES
+unset ZIT_CONFIGS
+unset ZIT_USERHOME
 
 function setprefuncs {
   NAME="${TRUENAME:+$TRUENAME}"
