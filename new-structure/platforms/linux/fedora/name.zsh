@@ -1,0 +1,3 @@
+TRUENAME=Fedora
+
+export TRUENAME

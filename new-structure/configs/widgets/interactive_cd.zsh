@@ -1,6 +1,6 @@
 # Interactive cd widget for zsh using fzf filter and fd finder.
 
-interactive_cd() {
+function interactive_cd() {
   ZIT_WIDGET=1
   local beginning_root="$PWD"
   local root="$PWD"

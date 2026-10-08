@@ -1,4 +1,4 @@
-overwrite_mode() { zle overwrite-mode;
+function overwrite_mode() { zle overwrite-mode;
 	[[ $ZLE_STATE == *"overwrite"* ]] && { 
 		echo -ne '\e[1 q\e[?12h'
 		return
