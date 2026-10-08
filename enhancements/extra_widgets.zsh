@@ -12,7 +12,8 @@ interactive_cd() {
   local origpathlvl=""
   local response action chosen query
   local -a response_lines
-  local fzf_cmd=${FZF_BASE:-fzf}
+  local fd_cmd=${FD_ZIT_CMD:-fd}
+  local fzf_cmd=${FZF_ZIT_CMD:-fzf}
 
   [[ $LBUFFER == cd || $LBUFFER == 'cd '* ]] || {
     zle expand-or-complete
@@ -32,7 +33,7 @@ interactive_cd() {
           --height=40% \
           --layout=reverse \
           --scheme=path \
-          --prompt="Level:$level  Diverged:$diverged  OrigPathLvl:$origpathlvl  > $display" \
+          --prompt="> $display" \
           --expect=ctrl-c \
           +m \
           --bind='enter:become(printf "accept\n%s\n" {})' \

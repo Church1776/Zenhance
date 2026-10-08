@@ -43,20 +43,20 @@ if [[ ! -s "${ZIT_USERHOME}/.zshrc" ]]; then
   cp "$ZIT_LOCATION/zshrc.zsh" "${ZIT_USERHOME}/.zshrc";
 else
   while IFS= read -r line; do
-    [[ $line == *$ZIT_FILENAME* ]] && break
+    [[ $line == *"$ZIT_FILENAME"* ]] && { break; }
   done < "${ZIT_USERHOME}/.zshrc"
 fi
 if [[ -r "${ZIT_USERHOME}/.zshrc" ]]; then
   while IFS= read -r line; do
-    [[ $line == *$ZIT_FILENAME* ]] || continue
+    [[ $line == *"${ZIT_FILENAME:t}"* ]] || { continue; }
     line="${line//source /}"
-    [[ -f $line ]] && { break; }
+    [[ -f ${line//'${ZDOTDIR:-$HOME}'/$ZIT_USERHOME} ]] && { break; }
   done < "${ZIT_USERHOME}/.zshrc"
   zit_file_line="${ZIT_FILENAME//$HOME/}"
   zit_file_line='${ZDOTDIR:-$HOME}'"$zit_file_line"
-  [[ -f $line ]] || { printf '\n%s\n' "source $zit_file_line" >> "${ZIT_USERHOME}/.zshrc"; }
+  [[ -f ${line//'${ZDOTDIR:-$HOME}'/$ZIT_USERHOME} ]] || { printf '\n%s\n' "source $zit_file_line" >> "${ZIT_USERHOME}/.zshrc"; }
+  unset zit_file_line line
 fi
-
 # Check for other packages needed to complete ZIT_LOCATION setup.
 source "$ZIT_LOCATION/dependancies/setup.zsh"
 source "$ZIT_LOCATION/dependancies/validator.zsh"
