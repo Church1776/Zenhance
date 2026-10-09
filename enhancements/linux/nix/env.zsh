@@ -1,0 +1,3 @@
+ZIT_TRUENAME=Nix
+
+export ZIT_TRUENAME

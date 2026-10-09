@@ -1,0 +1,3 @@
+ZIT_TRUENAME=Debian
+
+export ZIT_TRUENAME

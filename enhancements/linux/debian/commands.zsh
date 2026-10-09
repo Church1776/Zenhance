@@ -1,7 +1,5 @@
 # Command definitions for Debian-based Linux systems
-typeset -A cmds=(
-  [fd_cmd]=fdfind
-  [fzf_cmd]=fzf
-)
+ZIT_FD_CMD=fdfind
+ZIT_FZF_CMD=fzf
 
-function add_cmd_
+export ZIT_FD_CMD ZIT_FZF_CMD

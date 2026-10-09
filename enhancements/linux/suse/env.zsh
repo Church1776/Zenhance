@@ -1,0 +1,3 @@
+ZIT_TRUENAME=OpenSUSE
+
+export ZIT_TRUENAME

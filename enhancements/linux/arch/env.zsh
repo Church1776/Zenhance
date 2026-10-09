@@ -1,0 +1,3 @@
+ZIT_TRUENAME=Arch
+
+export ZIT_TRUENAME
