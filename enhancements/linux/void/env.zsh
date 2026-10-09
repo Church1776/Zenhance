@@ -1,0 +1,3 @@
+ZIT_TRUENAME=Void
+
+export ZIT_TRUENAME
