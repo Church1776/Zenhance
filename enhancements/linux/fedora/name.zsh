@@ -1,3 +1,3 @@
-TRUENAME=Fedora
+ZIT_TRUENAME=Fedora
 
-export TRUENAME
+export ZIT_TRUENAME

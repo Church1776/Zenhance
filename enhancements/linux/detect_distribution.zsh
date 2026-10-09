@@ -2,18 +2,22 @@ if [[ -e /etc/os-release ]]; then
   distro=$(cat /etc/os-release | sed '/^ID=.*/!d' | sed 's/^ID=\(.*\)/\1/g' )
 fi
 
+if [[ $distro == \"*\" ]]; then
+  distro="${distro//\"/}"
+fi
+
 if [[ ! -d "$ZIT_LOCATION/enhancements/linux/${(L)distro}" ]]; then
-  if [[ $+commands[apt] || $+commands[dpkg] ]]; then
+  if (( $+commands[apt] || $+commands[dpkg] )); then
     distro="debian"
-  elif [[ $+commands[apk] ]]; then
+  elif (( $+commands[apk] )); then
     distro="alpine"
-  elif [[ $+commands[yum] || $+commands[dnf] ]]; then
+  elif (( $+commands[yum] || $+commands[dnf] )); then
     distro="redhat"
-  elif [[ $+commands[pacman] || $+commands[paru] || $+commands[yay] ]]; then
+  elif (( $+commands[pacman] || $+commands[paru] || $+commands[yay] )); then
     distro="arch"
-  elif [[ $+commands[zypper] ]]; then
+  elif (( $+commands[zypper] )); then
     distro="suse"
-  elif [[ $+commands[xbps-install] ]]; then
+  elif (( $+commands[xbps-install] )); then
     distro="void"
   fi
 fi

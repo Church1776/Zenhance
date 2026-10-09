@@ -139,8 +139,8 @@ unset ZIT_CONFIGS
 unset ZIT_USERHOME
 
 function setprefuncs {
-  NAME="${TRUENAME:+$TRUENAME}"
-  unset TRUENAME
+  NAME="${ZIT_TRUENAME:+$ZIT_TRUENAME}"
+  unset ZIT_TRUENAME
   if [[ -z "$NAME" ]]; then
     if [[ -e /etc/os-release ]]; then
       NAME=$(cat /etc/os-release | sed -n 's/^ID=\(.*\)$/\1/p')
