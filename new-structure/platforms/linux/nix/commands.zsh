@@ -1,0 +1,4 @@
+ZIT_FD_CMD=fd
+ZIT_FZF_CMD=fzf
+
+export ZIT_FD_CMD ZIT_FZF_CMD

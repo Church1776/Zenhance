@@ -1,0 +1,1 @@
+function show_keys() { zle -M "received: ${(q-)KEYS}"; ; zle reset-prompt; }

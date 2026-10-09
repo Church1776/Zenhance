@@ -1,3 +1,3 @@
-ZIT_TRUENAME=Fedora
+ZIT_TRUENAME=Arch
 
 export ZIT_TRUENAME

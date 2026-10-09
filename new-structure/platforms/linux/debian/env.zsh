@@ -1,3 +1,3 @@
-ZIT_TRUENAME=Fedora
+ZIT_TRUENAME=Debian
 
 export ZIT_TRUENAME

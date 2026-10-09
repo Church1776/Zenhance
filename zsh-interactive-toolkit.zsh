@@ -5,8 +5,8 @@ zit_user=${zit_user:-'208'}
 zit_at=${zit_at:-'214'}
 zit_mach=${zit_mach:-'228'}
 zit_sys=${zit_sys:-'62'}
-zit_nixpath=${zit_nixpath:-'35'}
-zit_nixZ=${zit_nixZ:-'121'}
+zit_unxpath=${zit_unxpath:-'35'}
+zit_unxZ=${zit_unxZ:-'121'}
 zit_winpath=${zit_winpath:-'33'}
 zit_winZ=${zit_winZ:-'51'}
 zit_vcs=${zit_vcs:-'245'}
@@ -101,8 +101,8 @@ function shuser {
   else
     unixuser="$(uname)"
   fi
-  echo "Home directories found for ${ink[$zit_user]}$USER${ink[reset]}: ${ink[$zit_nixpath]}${unixuser}${ink[reset]}${WHOME:+|}${ink[$zit_winpath]}${WHOME:+Windows}${ink[reset]}."
-  echo -e "${ink[$zit_sys]}:[$unixuser]: ${ink[$zit_nixpath]}${HOME%$USER}${ink[$zit_user]}$USER${ink[reset]}"
+  echo "Home directories found for ${ink[$zit_user]}$USER${ink[reset]}: ${ink[$zit_unxpath]}${unixuser}${ink[reset]}${WHOME:+|}${ink[$zit_winpath]}${WHOME:+Windows}${ink[reset]}."
+  echo -e "${ink[$zit_sys]}:[$unixuser]: ${ink[$zit_unxpath]}${HOME%$USER}${ink[$zit_user]}$USER${ink[reset]}"
   [[ -n $WHOME ]] || return
   echo -e "${ink[$zit_sys]}:[Windows]: ${ink[$zit_winpath]}${WHOME%$USER}${ink[$zit_user]}$USER${ink[reset]}"
 }
@@ -180,8 +180,8 @@ function setprefuncs {
         Z_color=$zwinZ
       else
         UHOME=$HOME
-        path_color=$zit_nixpath
-        Z_color=$zit_nixZ
+        path_color=$zit_unxpath
+        Z_color=$zit_unxZ
         PWD="${PWD#$MROOT}"
         PWD=${PWD:-/}
       fi

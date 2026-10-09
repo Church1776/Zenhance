@@ -1,45 +1,35 @@
-# Compare 2 or more Colors of the given 256 ANSI code '0-255' arguments passed in either a sequential or range format.
-#
-# % cmpcolors [mandatory 2+] [color codes|code..range]
-#
-# The following Compare Colors 'cmpcolors' utility wraps Show Colors 'shcolors' to allow for checking ranges of colors.
-#
-# Utility will output the color of any given ansi 256 code or code range. As well as the following words: begin, end, all, & reset.
-# A range is specified using double dot notation '..'. A range will always print low..high output regardless if input is low..high|high..low.
-# Ex: begin..15, 6..7, 15..end, 0..reset
-# This utility has no formatting features. Formatting is handled by the 'shcolors' utility.
-
-function cmpcolors {
+function mkwidget {
   local ZIT_UTILITY=1
   local version="${ZIT_TOOLKIT_VERSION:-0.0.1}"
   local package_build="${ZIT_PACKAGE_BUILD:-zit-base}"
   local installed_dir="${ZIT_LOCATION:-unknown}"
 
-  local utility_title="Compare Colors"
-  local util_cli_name="cmpcolors"
+  local utility_title="Make Widget"
+  local util_cli_name="mkwidget"
 
-	local errmsg=''
-	local exitcode=''
-	local flagcode=''
+  local errmsg=''
+  local exitcode=''
+  local flagcode=''
 
-	local args=("$@")
+  local args=("$@")
+  local valid_args=()
 
-  local codes=("${args[@]}")
-  local lcode rcode
-  local translated_codes=()
-
-  if [[ -n $codes ]]; then
-    for code in "${codes[@]}"; do
-      if [[ $code == '-'* ]]; then
-        case $code in
+  if [[ -n $args ]]; then
+    for arg in "${args[@]}"; do
+      if [[ ! $arg == '-'* ]]; then
+				valid_args+=("$arg")
+			else
+        case $arg in
           -h|--help)flagcode='help'; exitcode=0; break;;
           -v|--version)flagcode='version'; exitcode=0; break;;
-          *) flagcode='error'; errmsg="Unknown option: $code"; exitcode=1; break;;
+          *) flagcode='error'; errmsg="Unknown option: $arg"; exitcode=1; break;;
         esac
       fi
-      if [[ $code == *'..'* ]]; then
-        lcode="${code%%..*}"
-        rcode="${code##*..}"
+		done
+		if [[ -z $flagcode && -n $valid_args ]]; then
+			for varg in "${valid_args[@]}"; do
+				
+			done
         if [[ ! $lcode =~ '^[0-9]+$' || $lcode -gt 255 ]]; then
           flagcode='error'
           errmsg="Invalid range: $code"
@@ -59,9 +49,9 @@ function cmpcolors {
         [[ $rcode == 'begin' ]] && rcode=0
         [[ $rcode == 'end' ]] && rcode=256
         if (( lcode > rcode )); then
-          code="$rcode..$lcode"
+          arg="$rcode..$lcode"
         else
-          code="$lcode..$rcode"
+          arg="$lcode..$rcode"
         fi
       else
         if [[ ! $code =~ '^[0-9]+$' ]] && [[ $code != 'reset' && $code != 'begin' && $code != 'end' ]]; then

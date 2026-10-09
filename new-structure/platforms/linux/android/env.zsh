@@ -1,0 +1,3 @@
+ZIT_TRUENAME=Android
+
+export ZIT_TRUENAME
