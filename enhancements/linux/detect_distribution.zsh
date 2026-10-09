@@ -5,6 +5,7 @@ fi
 if [[ $distro == \"*\" ]]; then
   distro="${distro//\"/}"
 fi
+echo "Distro detected: $distro"
 
 if [[ ! -d "$ZIT_LOCATION/enhancements/linux/${(L)distro}" ]]; then
   if (( $+commands[apt] || $+commands[dpkg] )); then

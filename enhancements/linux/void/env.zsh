@@ -1,3 +1,5 @@
 ZIT_TRUENAME=Void
 
 export ZIT_TRUENAME
+
+echo "TRUENAME: $ZIT_TRUENAME"
