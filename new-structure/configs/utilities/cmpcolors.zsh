@@ -16,7 +16,7 @@ function cmpcolors {
   local installed_dir="${ZIT_LOCATION:-unknown}"
 
   local utility_title="Compare Colors"
-  local util_cli_name="cmpcolors"
+  local util_cli_name="$0"
 
 	local errmsg=''
 	local exitcode=''

@@ -15,7 +15,7 @@ function setcursor {
 	local installed_dir="${ZIT_LOCATION:-unknown}"
 
 	local utility_title="Set Cursor"
-	local util_cli_name="setcursor"
+	local util_cli_name="$0"
 	
 	local errmsg=''
 	local exitcode=''
@@ -28,17 +28,26 @@ function setcursor {
 
 	if [[ -n "$styles" ]]; then
 		for style in "${styles[@]}"; do
+			case $style in
+				def) style='default';;
+				bb) style='block-blink';;
+				bs) style='block-solid';;
+				ub) style='underline-blink';;
+				us) style='underline-solid';;
+				lb) style='line-blink';;
+				ls) style='line-solid';;
+			esac
 			if [[ "$style" == '-'* ]]; then
 				case $style in
-          -h|--help)flagcode='help'; exitcode=0; break;;
-          -v|--version)flagcode='version'; exitcode=0; break;;
-          *) flagcode='error'; errmsg="Unknown option: $code"; exitcode=1; break;;
+			        -h|--help)flagcode='help'; exitcode=0; break;;
+        			-v|--version)flagcode='version'; exitcode=0; break;;
+    				*) flagcode='error'; errmsg="Unknown option: $style"; exitcode=1; break;;
 				esac
 			elif [[ ! " ${valid_styles[@]} " =~ " ${style} " ]]; then
 				flagcode="error"
 				errmsg="Invalid cursor style: '$style'."
 				exitcode=1
-			elif [[ "${#valid_styles}" -gt 1 ]]; then
+			elif [[ "${#styles}" -gt 1 ]]; then
 				flagcode="error"
 				errmsg="Multiple cursor styles provided. Only one style can be set at a time."
 				exitcode=1
@@ -60,14 +69,20 @@ function setcursor {
 				printf '%s\n' \
 				"--- $utility_title Utility ---" \
 				"Usage: $util_cli_name [style]" \
-				"Ex: $util_cli_name blinkline" \
+				"Ex: $util_cli_name line-solid" \
 				'' \
 				'Options:' \
 				'  -h, --help     Show this help message' \
 				'  -v, --version  Show the version information' \
 				'' \
 				'Valid Styles:' \
-				"  ${(ok)valid_styles[*]}"
+				'  def|default' \
+				'  bb|block-blink' \
+				'  bs|block-solid' \
+				'  ub|underline-blink' \
+				'  us|underline-solid' \
+				'  lb|line-blink' \
+				'  ls|line-solid'
 				;;
 			version)
 				printf '%s\n' \

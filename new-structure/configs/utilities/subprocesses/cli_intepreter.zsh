@@ -4,6 +4,7 @@
 #
 # The following CLI Interpreter subprocess only interprets options passed with the format: -o|--option
 
+return
 function cli_interpreter {
   [[ -n $ZIT_UTILITY ]] || { echo "$0: zit utility must be running to call this process."; return;}
 

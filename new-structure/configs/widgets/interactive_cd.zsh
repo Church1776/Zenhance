@@ -1,5 +1,7 @@
 # Interactive cd widget for zsh using fzf filter and fd finder.
 
+UNSET_INTERACTIVE_CD=0
+
 function interactive_cd() {
   ZIT_WIDGET=1
   local beginning_root="$PWD"
@@ -14,10 +16,20 @@ function interactive_cd() {
   local fd_cmd=${ZIT_FD_CMD:-fd}
   local fzf_cmd=${ZIT_FZF_CMD:-fzf}
 
-  [[ $LBUFFER == cd || $LBUFFER == 'cd '* ]] || {
+  if [[ $LBUFFER == cd || $LBUFFER == 'cd '* ]]; then
     zle expand-or-complete
     return
-  }
+  fi
+  if (( ! $+commands[fd] )); then
+    echo "fd not found. Unable to create interactive_cd command."
+    UNSET_INTERACTIVE_CD=1
+    return
+  fi
+  if (( ! $+commands[fzf] )); then
+    echo "fzf not found. Unable to create interactive_cd command."
+    UNSET_INTERACTIVE_CD=1
+    return
+  fi
 
   query=${LBUFFER#cd }
   zle -I
@@ -102,3 +114,6 @@ function interactive_cd() {
     query=
   done
 }
+if (( UNSET_INTERACTIVE_CD )); then
+  unset -f interactive_cd 2>/dev/null
+fi

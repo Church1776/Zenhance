@@ -1,51 +1,78 @@
 #!/usr/bin/zsh
 
+# Z Shell easy color modifiers for changing the terminal_user prompt.
+zit_user=${zit_user:-'208'}
+zit_at=${zit_at:-'214'}
+zit_mach=${zit_mach:-'228'}
+zit_sys=${zit_sys:-'62'}
+zit_unxpath=${zit_unxpath:-'35'}
+zit_unxZ=${zit_unxZ:-'121'}
+zit_winpath=${zit_winpath:-'33'}
+zit_winZ=${zit_winZ:-'51'}
+zit_vcs=${zit_vcs:-'245'}
+zit_vcs2=${zit_vcs2:-'250'}
+zit_vcs3=${zit_vcs3:-'reset'}
+zit_colon=${zit_colon:-'245'}
+
+# Cursor styles (uncomment one)
+#printf '\e[0 q'         # Default (terminal-dependent)
+#printf '\e[1 q'  # Blinking block
+#printf '\e[2 q'         # Steady block
+printf '\e[3 q'  # Blinking underline
+#printf '\e[4 q'         # Steady underline
+#printf '\e[5 q'  # Blinking bar (I-beam)
+#printf '\e[6 q'         # Steady bar (recommended for modern terminals)
+
 # Configure completion to be case insensitive.
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
 
 ZIT_FILENAME="${${(%):-%N}:A}"
 ZIT_LOCATION="${ZIT_FILENAME:h}"
-ZIT_CONFIGS="$ZIT_LOCATION/configs"
-ZIT_CACHE="$ZIT_LOCATION/cache"
-ZIT_PLATFORMS="$ZIT_LOCATION/platforms"
+ZIT_DEPENDANCIES="$ZIT_LOCATION/dependancies"
+ZIT_CONFIGS="$ZIT_LOCATION/enhancements"
 ZIT_USERHOME="${ZDOTDIR:-$HOME}"
+ZIT_INITDIR=""
 
+# Move to Zenhance directory for handling dependancy paths.
+if [[ ! "$PWD" == "$ZIT_LOCATION" ]]; then
+  ZIT_INITDIR="$PWD"
+  cd "$ZIT_LOCATION"
+fi
 # Check for Zsh RC file. If no file exists copy zshrc.zsh file to HOME/.zshrc. If HOME/.zshrc doesn't source this file, append a line for sourcing.
-function check_zshrc {
-  local line zit_file_line
-  if [[ ! -s "${ZIT_USERHOME}/.zshrc" ]]; then
-    cp "$ZIT_LOCATION/zshrc.zsh" "${ZIT_USERHOME}/.zshrc";
-  else
-    while IFS= read -r line; do
-      [[ $line == *"$ZIT_FILENAME"* ]] && { break; }
-    done < "${ZIT_USERHOME}/.zshrc"
-  fi
-  if [[ -r "${ZIT_USERHOME}/.zshrc" ]]; then
-    while IFS= read -r line; do
-      [[ $line == *"${ZIT_FILENAME:t}"* ]] || { continue; }
-      line="${line//source /}"
-      [[ -f ${line//'${ZDOTDIR:-$HOME}'/$ZIT_USERHOME} ]] && { break; }
-    done < "${ZIT_USERHOME}/.zshrc"
-    zit_file_line="${ZIT_FILENAME//$HOME/}"
-    zit_file_line='${ZDOTDIR:-$HOME}'"$zit_file_line"
-    [[ -f ${line//'${ZDOTDIR:-$HOME}'/$ZIT_USERHOME} ]] || { printf '\n%s\n' "source $zit_file_line" >> "${ZIT_USERHOME}/.zshrc"; }
-  fi
-}
-check_zshrc
-unset -f check_zshrc
+if [[ ! -s "${ZIT_USERHOME}/.zshrc" ]]; then
+  cp "$ZIT_LOCATION/zshrc.zsh" "${ZIT_USERHOME}/.zshrc";
+else
+  while IFS= read -r line; do
+    [[ $line == *"$ZIT_FILENAME"* ]] && { break; }
+  done < "${ZIT_USERHOME}/.zshrc"
+fi
+if [[ -r "${ZIT_USERHOME}/.zshrc" ]]; then
+  while IFS= read -r line; do
+    [[ $line == *"${ZIT_FILENAME:t}"* ]] || { continue; }
+    line="${line//source /}"
+    [[ -f ${line//'${ZDOTDIR:-$HOME}'/$ZIT_USERHOME} ]] && { break; }
+  done < "${ZIT_USERHOME}/.zshrc"
+  zit_file_line="${ZIT_FILENAME//$HOME/}"
+  zit_file_line='${ZDOTDIR:-$HOME}'"$zit_file_line"
+  [[ -f ${line//'${ZDOTDIR:-$HOME}'/$ZIT_USERHOME} ]] || { printf '\n%s\n' "source $zit_file_line" >> "${ZIT_USERHOME}/.zshrc"; }
+  unset zit_file_line line
+fi
+# Check for other packages needed to complete ZIT_LOCATION setup.
+source "$ZIT_LOCATION/dependancies/setup.zsh"
+source "$ZIT_LOCATION/dependancies/validator.zsh"
 
 # Configure Windows home directory. I'm Assuming the Windows environment is available to the User.
 # If Windows environment is not available, no errors are thrown. Nothing special needs to be done.
 # This is only to resolve the main environment folders. Distributions will be resolved within each folder separately.
 if (( $+commands[cygpath] )); then
-  ZIT_UENV="Windows"
+  usys="Windows"
 else
-  ZIT_UENV="$(uname)"
-  if [[ $ZIT_UENV =~ ^.*BSD$ ]]; then
-    ZIT_UENV="BSD"
+  usys="$(uname)"
+  if [[ $usys =~ ^.*BSD$ ]]; then
+    usys="BSD"
   fi
 fi
-case $ZIT_UENV in
+case $usys in
   Windows) WHOME=$(cygpath -u ${WINDIR%%\\*})/Users/$USER;;
   Linux) WHOME="$(find /mnt -maxdepth 2 -type d -name "Users" 2>/dev/null)"; WHOME="${WHOME:+$WHOME/$USER}";;
   Darwin) WHOME="$(find /mnt -maxdepth 2 -type d -name "Users" 2>/dev/null)"; WHOME="${WHOME:+$WHOME/$USER}";;
@@ -53,44 +80,32 @@ case $ZIT_UENV in
 esac
 
 # Initialize shell configurations relative to script's location.
-function load_caches {
-  local caches=()
-  caches=($(find "$ZIT_CACHE" -maxdepth 1 -type f -name '*.zsh'))
-  if [[ -n $caches ]]; then
-    for cache in ${caches[@]}; do
-      [[ -f $cache ]] && source $cache
-    done
-  fi
-}
-load_caches
-unset -f load_caches
-
 function load_configs {
   local configs=()
-  configs=($(find "$ZIT_CONFIGS/${(L)ZIT_UENV}" -maxdepth 1 -type f -name '*.zsh'))
-  configs+=($(find "$ZIT_CONFIGS" -maxdepth 1 -type f -name '*.zsh' ))
+  configs=($(find "$ZIT_LOCATION/enhancements/${(L)usys}" -maxdepth 1 -type f -name '*.zsh'))
+  configs+=($(find "$ZIT_LOCATION/enhancements" -maxdepth 1 -type f -name '*.zsh' ))
   if [[ -n $configs ]]; then
-    for config in ${configs[@]}; do
+    for config in ${(@)configs[@]}; do
       [[ -f $config ]] && source $config
     done
   fi
 }
+#load_configs
 load_configs
-unset -f load_configs
 
-# Z Shell easy color modifiers for changing the terminal_user prompt.
-zit_name=${gps[name]:-'208'}
-zit_at=${gps[at]:-'214'}
-zit_machine=${gps[machine]:-'228'}
-zit_system=${gps[system]:-'62'}
-zit_unixpath=${gps[unixpath]:-'35'}
-zit_unixZ=${gps[unixZ]:-'121'}
-zit_winpath=${gps[winpath]:-'33'}
-zit_winZ=${gps[winZ]:-'51'}
-zit_vcs=${gps[vcs]:-'245'}
-zit_vcs2=${gps[vcs2]:-'250'}
-zit_vcs3=${gps[vcs3]:-'reset'}
-zit_colon=${gps[colon]:-'245'}
+# Display Shell User paths.
+function shuser {
+  local unixuser=""
+  if [[ $usys == "Windows" ]]; then
+    unixuser=$(uname -o)
+  else
+    unixuser="$(uname)"
+  fi
+  echo "Home directories found for ${ink[$zit_user]}$USER${ink[reset]}: ${ink[$zit_unxpath]}${unixuser}${ink[reset]}${WHOME:+|}${ink[$zit_winpath]}${WHOME:+Windows}${ink[reset]}."
+  echo -e "${ink[$zit_sys]}:[$unixuser]: ${ink[$zit_unxpath]}${HOME%$USER}${ink[$zit_user]}$USER${ink[reset]}"
+  [[ -n $WHOME ]] || return
+  echo -e "${ink[$zit_sys]}:[Windows]: ${ink[$zit_winpath]}${WHOME%$USER}${ink[$zit_user]}$USER${ink[reset]}"
+}
 
 # Check if in a git repository and grab the root directory for the precmd function.
 zit_vcs_root=""
@@ -101,18 +116,22 @@ zit_vcs_cmd_rerun=""
 zit_cached_usystem=""
 zit_cached_directory=""
 
-
+# Return User to their original location and grab Pre-Command function for the prompt.
+if [[ -n "$ZIT_INITDIR" ]]; then
+  cd "$ZIT_INITDIR"
+  unset ZIT_INITDIR
+fi
 
 # Source post-enhance configurations.
 source "$ZIT_LOCATION/dependancies/post_enhance_configs.zsh"
 
 READY_FOR_PRECMD=1
-if [[ $ZIT_UENV == "Windows" ]]; then
+if [[ $usys == "Windows" ]]; then
   subsys="$(uname -o)"
-  #source "$(find $ZIT_LOCATION/enhancements/${(L)ZIT_UENV}/${(L)subsys} -type f -name 'precmd.zsh')"
+  #source "$(find $ZIT_LOCATION/enhancements/${(L)usys}/${(L)subsys} -type f -name 'precmd.zsh')"
   unset subsys
 else
-  #source "$(find "$ZIT_LOCATION/enhancements/${(L)ZIT_UENV}" -maxdepth 1 -name '*.zsh')"
+  #source "$(find "$ZIT_LOCATION/enhancements/${(L)usys}" -maxdepth 1 -name '*.zsh')"
 fi
 unset READY_FOR_PRECMD
 unset ZIT_DEPENDANCIES
@@ -125,7 +144,7 @@ function setprefuncs {
   if [[ -z "$NAME" ]]; then
     if [[ -e /etc/os-release ]]; then
       NAME=$(cat /etc/os-release | sed -n 's/^ID=\(.*\)$/\1/p')
-    elif [[ $ZIT_UENV == "Windows" ]]; then
+    elif [[ $usys == "Windows" ]]; then
       NAME=$(uname -o)
     else
       NAME="$(uname)"
@@ -151,7 +170,7 @@ function setprefuncs {
           UCRT64)NAME='UCRT64';;
           MSYS)NAME='Msys';;
         esac
-        USYSTEM="${NAME:-$ZIT_UENV}"
+        USYSTEM="${NAME:-$usys}"
         zit_cached_usystem="$USYSTEM"
     fi
     if [[ "$PWD" != "$zit_cached_directory" ]]; then
@@ -161,8 +180,8 @@ function setprefuncs {
         Z_color=$zwinZ
       else
         UHOME=$HOME
-        path_color=$zit_unixpath
-        Z_color=$zit_unixZ
+        path_color=$zit_unxpath
+        Z_color=$zit_unxZ
         PWD="${PWD#$MROOT}"
         PWD=${PWD:-/}
       fi
@@ -210,7 +229,7 @@ function setprefuncs {
       zit_vcs_branch="%{${ink[$zit_vcs]}%}($zit_vcs_branch)%{${ink[reset]}%} "
     fi
     zit_cached_directory="$PWD"
-    PROMPT="%{${ink[$zit_name]}%}%n%{${ink[$zit_at]}%}@%{${ink[$zit_machine]}%}%m%{${ink[$zit_colon]}%}:%{${ink[$zit_system]}%}$USYSTEM%{${ink[$zit_colon]}%}:%{${ink[$path_color]}%}${PWD/$UHOME/~}%{${ink[$Z_color]}%}%#%{${ink[reset]}%} ${zit_vcs_branch}"
+    PROMPT="%{${ink[$zit_user]}%}%n%{${ink[$zit_at]}%}@%{${ink[$zit_mach]}%}%m%{${ink[$zit_colon]}%}:%{${ink[$zit_sys]}%}$USYSTEM%{${ink[$zit_colon]}%}:%{${ink[$path_color]}%}${PWD/$UHOME/~}%{${ink[$Z_color]}%}%#%{${ink[reset]}%} ${zit_vcs_branch}"
     return
   }
 }

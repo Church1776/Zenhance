@@ -8,7 +8,6 @@
 # Since ANSI 256 codes have the 0 code referring to a color as opposed to resetting the terminal,
 # I made a 'reset' option so you can use the Ink Dictionary to also reset the terminal.
 
-[[ -n $ink ]] && { return;}
 typeset -gA ink=(
   '0'     $'\033[38;5;0m'
   '1'     $'\033[38;5;1m'

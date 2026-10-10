@@ -2,3 +2,5 @@
 #
 # This method allows for a consistent toolkit approach for validating input.
 # This validator passes to single purpose validation functions.
+
+return

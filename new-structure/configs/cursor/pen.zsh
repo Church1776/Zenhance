@@ -8,8 +8,8 @@ typeset -gA pen=(
     default     $'\e[0 q'
     block-blink  $'\e[1 q'
     block-solid  $'\e[2 q'
-    line-blink   $'\e[3 q'
-    line-solid   $'\e[4 q'
-    ibeam-blink  $'\e[5 q'
-    ibeam-solid  $'\e[6 q'
+    underline-blink   $'\e[3 q'
+    underline-solid   $'\e[4 q'
+    line-blink  $'\e[5 q'
+    line-solid  $'\e[6 q'
 )

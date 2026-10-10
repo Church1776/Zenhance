@@ -15,7 +15,7 @@ function shcolors {
   local installed_dir="${ZIT_LOCATION:-unknown}"
 
   local utility_title="Show Colors"
-  local util_cli_name="shcolors"
+  local util_cli_name="$0"
 
   local errmsg=''
   local exitcode=''
